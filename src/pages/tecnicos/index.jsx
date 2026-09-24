@@ -75,14 +75,14 @@ export default function TecnicosPage() {
   return (
     <PageLayout title="Equipe Técnica">
       <div className="space-y-6">
-        <div className="flex justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <div>
             <h2 className="text-base font-semibold text-slate-800 dark:text-white">Técnicos & Instaladores</h2>
             <p className="text-xs text-slate-500">Profissionais responsáveis pelas Ordens de Serviço e atendimentos de campo.</p>
           </div>
           <button
             onClick={handleAbrirNovo}
-            className="flex items-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
           >
             <Plus size={18} />
             Novo Técnico

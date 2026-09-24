@@ -81,33 +81,33 @@ export default function DashboardPage() {
     <PageLayout title="Painel de Controle - Zeu-Tech">
       <div className="space-y-8">
         {/* BOAS-VINDAS E ATALHOS RÁPIDOS */}
-        <div className="bg-gradient-to-r from-[#060d30] via-[#0057b8] to-[#00c8ff] rounded-3xl p-6 sm:p-8 text-white shadow-lg border border-[#00c8ff]/20">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="bg-gradient-to-r from-[#060d30] via-[#0057b8] to-[#00c8ff] rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-lg border border-[#00c8ff]/20">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
             <div>
-              <span className="text-xs font-bold tracking-wider uppercase bg-white/20 px-3 py-1 rounded-full">
+              <span className="text-[10px] sm:text-xs font-bold tracking-wider uppercase bg-white/20 px-2.5 py-1 rounded-full">
                 Gestão Operacional & Comercial
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold mt-3">
+              <h2 className="text-xl sm:text-3xl font-extrabold mt-2.5 sm:mt-3">
                 Zeu-Tech
               </h2>
-              <p className="text-white/90 text-sm mt-1 max-w-xl">
+              <p className="text-white/90 text-xs sm:text-sm mt-1 max-w-xl">
                 Controle integral de orçamentos, ordens de serviço, técnicos de campo, equipamentos instalados e faturamento.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-row flex-wrap sm:flex-nowrap gap-2 sm:gap-2.5 w-full sm:w-auto">
               <Link
                 to="/orcamentos"
-                className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#0057b8] hover:bg-[#00c8ff]/10 font-semibold text-xs rounded-xl shadow-md transition-all"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-white text-[#0057b8] hover:bg-[#00c8ff]/10 font-semibold text-xs rounded-xl shadow-md transition-all whitespace-nowrap"
               >
-                <PlusCircle size={16} />
+                <PlusCircle size={15} />
                 Novo Orçamento
               </Link>
               <Link
                 to="/ordens-servico"
-                className="flex items-center gap-2 px-4 py-2.5 bg-slate-900/40 hover:bg-slate-900/60 text-white font-semibold text-xs rounded-xl border border-white/20 transition-all"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-slate-900/40 hover:bg-slate-900/60 text-white font-semibold text-xs rounded-xl border border-white/20 transition-all whitespace-nowrap"
               >
-                <Wrench size={16} />
+                <Wrench size={15} />
                 Nova OS
               </Link>
             </div>

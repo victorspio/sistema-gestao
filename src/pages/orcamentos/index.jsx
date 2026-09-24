@@ -283,7 +283,7 @@ export default function OrcamentosPage() {
         </div>
 
         {/* BARRA DE AÇÕES: BUSCA + FILTROS + NOVO ORÇAMENTO */}
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-3 sm:gap-4 items-stretch md:items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -295,11 +295,11 @@ export default function OrcamentosPage() {
             />
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto justify-end">
             <select
               value={filtroStatus}
               onChange={(e) => setFiltroStatus(e.target.value)}
-              className="px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full sm:w-auto px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               <option value="todos">Todos os Status</option>
               <option value="aguardando">Aguardando Aprovação</option>
@@ -314,7 +314,7 @@ export default function OrcamentosPage() {
                 setOrcamentoEditar(null);
                 setModalFormAberto(true);
               }}
-              className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
             >
               <Plus size={18} />
               Novo Orçamento
@@ -336,7 +336,7 @@ export default function OrcamentosPage() {
                 <p className="text-xs text-slate-400 mt-1">Crie uma nova proposta comercial clicando no botão acima.</p>
               </div>
             ) : (
-              <table className="w-full text-left border-collapse">
+              <table className="min-w-[800px] w-full text-left border-collapse">
                 <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                   <tr>
                     <th className="px-5 py-3.5">Proposta</th>

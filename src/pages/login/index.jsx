@@ -14,16 +14,16 @@ export default function LoginPage() {
   const { login, user, isConfigured } = useAuth();
   const navigate = useNavigate();
 
-  // Se Firebase não está configurado, redireciona para /vendas onde o PrivateRoute
+  // Se Firebase não está configurado, redireciona para /dashboard onde o PrivateRoute
   // vai mostrar a tela de "Firebase não configurado"
   if (!isConfigured) {
-    return <Navigate to="/vendas" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
-  // Se já estiver logado, redireciona direto para as vendas
+  // Se já estiver logado, redireciona direto para o dashboard
   useEffect(() => {
     if (user) {
-      navigate('/vendas', { replace: true });
+      navigate('/dashboard', { replace: true });
     }
   }, [user, navigate]);
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
         localStorage.removeItem('@app:remember_password');
       }
 
-      navigate('/vendas', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('Erro ao fazer login:', err);
 
