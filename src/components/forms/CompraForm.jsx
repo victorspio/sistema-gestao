@@ -205,7 +205,7 @@ export default function CompraForm({ onSubmit, initialData }) {
           <input
             type="text"
             {...register('fornecedor')}
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all"
             placeholder="Nome do fornecedor"
           />
           {errors.fornecedor && (
@@ -220,7 +220,7 @@ export default function CompraForm({ onSubmit, initialData }) {
           <input
             type="date"
             {...register('dataCompra')}
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all"
           />
           {errors.dataCompra && (
             <p className="mt-1 text-sm text-red-600">{errors.dataCompra.message}</p>
@@ -237,9 +237,9 @@ export default function CompraForm({ onSubmit, initialData }) {
           <button
             type="button"
             onClick={() => append({ nomeProduto: '', categoria: '', unidade: 'un', quantidade: '', valorCompra: '', valorVenda: '' })}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl text-xs font-semibold transition-all shadow-sm"
           >
-            <Plus size={16} />
+            <Plus size={15} />
             Adicionar Produto
           </button>
         </div>
@@ -266,7 +266,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                         const valor = watchedValues.itens?.[index]?.nomeProduto;
                         if (valor) buscarProdutosSimilares(valor, index);
                       }}
-                      className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       placeholder="Digite o nome..."
                       autoComplete="off"
                     />
@@ -282,7 +282,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                             <div
                               key={produto.id}
                               onClick={() => selecionarProduto(index, produto)}
-                              className="w-full text-left px-3 py-2 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors cursor-pointer"
+                              className="w-full text-left px-3 py-2 hover:bg-cyan-50 dark:hover:bg-cyan-950/20 rounded-lg transition-colors cursor-pointer"
                             >
                               <div className="flex items-center justify-between">
                                 <div>
@@ -293,7 +293,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                                     {produto.categoria} • Estoque: {produto.quantidade || 0}
                                   </p>
                                 </div>
-                                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                                <p className="text-sm font-semibold text-cyan-600 dark:text-cyan-400">
                                   R$ {(produto.precoCompra || produto.valorUnitario || 0).toFixed(2)}
                                 </p>
                               </div>
@@ -316,7 +316,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                   <input
                     type="text"
                     {...register(`itens.${index}.categoria`)}
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     placeholder="Ex: Materiais"
                   />
                 </div>
@@ -327,7 +327,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                   </label>
                   <select
                     {...register(`itens.${index}.unidadeCompra`)}
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   >
                     {Object.entries(UNIDADES).map(([sigla, { nome }]) => (
                       <option key={sigla} value={sigla}>{sigla.toUpperCase()} — {nome}</option>
@@ -348,7 +348,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                     step="any"
                     {...register(`itens.${index}.fatorConversao`)}
                     onWheel={(e) => e.target.blur()}
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     placeholder="1"
                     title="Quantidade de unidades base em 1 unidade de compra (ex: 10 para saco de 10kg)"
                   />
@@ -363,7 +363,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                   </label>
                   <select
                     {...register(`itens.${index}.unidade`)}
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   >
                     {Object.entries(UNIDADES).map(([sigla, { nome }]) => (
                       <option key={sigla} value={sigla}>{sigla.toUpperCase()} — {nome}</option>
@@ -384,7 +384,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                     step="0.01"
                     {...register(`itens.${index}.quantidade`)}
                     onWheel={(e) => e.target.blur()}
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     placeholder="0"
                   />
                   {errors.itens?.[index]?.quantidade && (
@@ -403,7 +403,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                       step="0.01"
                       {...register(`itens.${index}.valorCompra`)}
                       onWheel={(e) => e.target.blur()}
-                      className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       placeholder="0,00"
                     />
                   </div>
@@ -423,7 +423,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                       step="0.01"
                       {...register(`itens.${index}.valorVenda`)}
                       onWheel={(e) => e.target.blur()}
-                      className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       placeholder="0,00"
                     />
                   </div>
@@ -462,7 +462,7 @@ export default function CompraForm({ onSubmit, initialData }) {
           </label>
           <select
             {...register('formaPagamento')}
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all"
           >
             <option value="">Selecione...</option>
             <option value="dinheiro">Dinheiro</option>
@@ -492,24 +492,24 @@ export default function CompraForm({ onSubmit, initialData }) {
         <textarea
           {...register('observacoes')}
           rows={3}
-          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all resize-none"
+          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all resize-none"
           placeholder="Informações adicionais sobre a compra..."
         />
       </div>
 
       {/* Botões */}
-      <div className="flex gap-4 justify-end border-t border-slate-200 dark:border-slate-700 pt-6">
+      <div className="flex gap-3 justify-end border-t border-slate-200 dark:border-slate-700 pt-6">
         <button
           type="button"
           onClick={() => onSubmit(null)}
-          className="px-6 py-3 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl font-medium transition-all"
+          className="px-5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-all"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
         >
           {isSubmitting ? 'Salvando...' : initialData ? 'Atualizar Compra' : 'Salvar Compra'}
         </button>

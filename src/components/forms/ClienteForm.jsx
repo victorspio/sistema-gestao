@@ -65,7 +65,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           onClick={() => handleTipoChange('PF')}
           className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
             tipoPessoa === 'PF'
-              ? 'bg-orange-500 text-white shadow-sm'
+              ? 'bg-cyan-500 text-white shadow-sm'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -76,7 +76,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           onClick={() => handleTipoChange('PJ')}
           className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
             tipoPessoa === 'PJ'
-              ? 'bg-orange-500 text-white shadow-sm'
+              ? 'bg-cyan-500 text-white shadow-sm'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -92,7 +92,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
             placeholder={tipoPessoa === 'PJ' ? 'Ex: Tech Segurança Ltda' : 'Ex: João da Silva'}
             {...register('nome')}
           />
@@ -108,7 +108,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
             placeholder={tipoPessoa === 'PJ' ? 'Ex: Tech Seg' : 'Ex: João'}
             {...register('apelido')}
           />
@@ -124,7 +124,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
             placeholder={tipoPessoa === 'PJ' ? '14 dígitos (apenas números)' : '11 dígitos (apenas números)'}
             maxLength={tipoPessoa === 'PJ' ? 14 : 11}
             {...register('cpf')}
@@ -141,7 +141,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           </label>
           <input
             type="tel"
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
             placeholder="DDD + Número (apenas números)"
             {...register('telefone')}
           />
@@ -157,7 +157,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           </label>
           <input
             type="tel"
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
             placeholder="DDD + Número (apenas números)"
             {...register('whatsapp')}
           />
@@ -173,7 +173,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           </label>
           <input
             type="email"
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
             placeholder="exemplo@email.com"
             {...register('email')}
           />
@@ -196,7 +196,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
             </label>
             <input
               type="text"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
               placeholder="Rua, Avenida, Número"
               {...register('endereco')}
             />
@@ -212,7 +212,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
             </label>
             <input
               type="text"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
               placeholder="Apto, Sala, Bloco, Galpão"
               {...register('complemento')}
             />
@@ -228,7 +228,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
             </label>
             <input
               type="text"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
               placeholder="Nome do bairro"
               {...register('bairro')}
             />
@@ -244,7 +244,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
             </label>
             <input
               type="text"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
               placeholder="Cidade"
               {...register('cidade')}
             />
@@ -259,7 +259,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
               Estado
             </label>
             <select
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
               {...register('estado')}
             >
               <option value="">Selecione o estado</option>
@@ -303,7 +303,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
             </label>
             <input
               type="text"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
               placeholder="00000-000"
               maxLength="9"
               {...register('cep')}
@@ -321,7 +321,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           Observações / Informações Técnicas do Cliente
         </label>
         <textarea
-          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 min-h-[100px]"
+          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 min-h-[100px]"
           placeholder="Ex: Horário de acesso para manutenção, portão eletrônico, síndico/responsável local..."
           {...register('observacoes')}
         />
@@ -344,7 +344,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+          className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
         >
           {isSubmitting ? 'Salvando...' : isEditing ? 'Atualizar Cliente' : 'Cadastrar Cliente'}
         </button>

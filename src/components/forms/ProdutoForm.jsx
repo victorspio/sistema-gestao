@@ -193,7 +193,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
         <input
           type="text"
           {...register('nome')}
-          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           placeholder="Ex: Câmera Dome Full HD 1080p IR 20m"
         />
         {errors.nome && (
@@ -210,7 +210,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
           <input
             type="text"
             {...register('marca')}
-            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             placeholder="Ex: Intelbras, Hikvision, JFL, PPA..."
           />
         </div>
@@ -222,7 +222,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
           <input
             type="text"
             {...register('modelo')}
-            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             placeholder="Ex: VHD 1120 D G6 / SKU-8841"
           />
         </div>
@@ -235,7 +235,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
         <textarea
           {...register('descricao')}
           rows={3}
-          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           placeholder="Ex: Lente 2.8mm, proteção IP66 contra chuva, alcance 20 metros..."
         />
       </div>
@@ -249,7 +249,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
           <input
             type="text"
             {...register('categoria')}
-            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             placeholder={categoriasPlaceholder}
             list="categorias"
             autoComplete="off"
@@ -270,7 +270,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
           </label>
           <select
             {...register('unidade')}
-            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
           >
             <option value="un">Unidade (un)</option>
             <option value="m">Metro (m)</option>
@@ -298,7 +298,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
             step="any"
             {...register('quantidade')}
             onWheel={(e) => e.target.blur()}
-            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             placeholder="0"
           />
           {errors.quantidade && (
@@ -315,7 +315,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
             step="any"
             {...register('estoqueMinimo')}
             onWheel={(e) => e.target.blur()}
-            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             placeholder="5"
           />
           {errors.estoqueMinimo && (
@@ -337,7 +337,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
               step="any"
               {...register('precoCompra')}
               onWheel={(e) => e.target.blur()}
-              className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               placeholder="0,00"
             />
           </div>
@@ -357,7 +357,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
               step="any"
               {...register('precoVenda')}
               onWheel={(e) => e.target.blur()}
-              className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               placeholder="0,00"
             />
           </div>
@@ -388,7 +388,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
               {...register('fatorConversao')}
               onWheel={(e) => e.target.blur()}
               placeholder="Ex: 10 (ex: Saco de 10kg)"
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Qtd de sub-itens na embalagem</p>
             {errors.fatorConversao && (
@@ -402,7 +402,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
             </label>
             <select
               {...register('unidadeVenda')}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
             >
               <option value="un">Unidade (un)</option>
               <option value="kg">Quilograma (kg)</option>
@@ -431,7 +431,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
                 {...register('precoVendaUnitario')}
                 onWheel={(e) => e.target.blur()}
                 placeholder="Calculado se vazio"
-                className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full pl-10 pr-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </div>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Deixe em branco para auto-calcular</p>
@@ -451,7 +451,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
               {...register('incrementoMinimoVenda')}
               onWheel={(e) => e.target.blur()}
               placeholder="0 = livre"
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Ex: 0.1 para frações de 100g</p>
             {errors.incrementoMinimoVenda && (
@@ -470,7 +470,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
           <input
             type="text"
             {...register('fornecedor')}
-            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             placeholder="Nome do fornecedor"
           />
         </div>
@@ -482,7 +482,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
           <input
             type="text"
             {...register('localizacao')}
-            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             placeholder="Ex: Prateleira A3, Galpão 2..."
           />
         </div>
@@ -526,10 +526,10 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-lg hover:border-orange-400 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all group cursor-pointer"
+            className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl hover:border-cyan-400 dark:hover:border-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-950/10 transition-all group cursor-pointer"
           >
-            <ImagePlus size={22} className="text-slate-400 group-hover:text-orange-500 transition-colors mb-1" />
-            <p className="text-xs text-slate-500 dark:text-slate-400 group-hover:text-orange-500 transition-colors">
+            <ImagePlus size={22} className="text-slate-400 group-hover:text-cyan-500 transition-colors mb-1" />
+            <p className="text-xs text-slate-500 dark:text-slate-400 group-hover:text-cyan-500 transition-colors">
               Clique para selecionar uma imagem
             </p>
             <p className="text-[11px] text-slate-400 mt-0.5">JPG, PNG, WEBP — será comprimida automaticamente</p>
@@ -546,20 +546,20 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
       </div>
 
       {/* Botões */}
-      <div className="flex gap-4 pt-4">
+      <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
         <button
           type="button"
           onClick={onCancel}
-          className="btn btn-outline"
+          className="px-5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-all"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="btn btn-primary"
+          className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Salvando...' : initialData ? 'Atualizar' : 'Cadastrar'}
+          {isSubmitting ? 'Salvando...' : initialData ? 'Atualizar Produto' : 'Cadastrar Produto'}
         </button>
       </div>
     </form>

@@ -6,15 +6,34 @@ import { useDebounce } from '../../hooks/useDebounce';
 import PageLayout from '../../components/layout-new/PageLayout';
 import ClienteForm from '../../components/forms/ClienteForm';
 import Modal from '../../components/modals/Modal';
-import { Plus, Search, Edit, Trash2, History, Users, X, Eye } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  History,
+  Users,
+  X,
+  Eye,
+  Building2,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  CheckCircle2,
+  Calendar,
+  Filter,
+  RotateCcw
+} from 'lucide-react';
 import { ClientesSkeleton, LoadingSpinner, EmptyState } from '../../components/ui/LoadingComponents';
 import { useVendas } from '../../hooks/useVendas';
-import { formatQuantity } from '../../utils/formatters';
+import { formatQuantity, formatarData } from '../../utils/formatters';
 
 export default function ClientesPage() {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [tipoPessoaFiltro, setTipoPessoaFiltro] = useState('todos'); // 'todos', 'PF', 'PJ'
   const [clienteParaEditar, setClienteParaEditar] = useState(null);
   const [clienteParaExcluir, setClienteParaExcluir] = useState(null);
   const [formError, setFormError] = useState(null);
@@ -36,13 +55,11 @@ export default function ClientesPage() {
     atualizarCliente,
     deletarCliente,
     obterHistoricoCliente,
-    cache,
     invalidarCache
   } = useClientes();
 
-  const { vendas, listarVendas } = useVendas();
   const { produtos, listarProdutos } = useEstoque();
-  
+
   // Debounce para busca
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -63,10 +80,25 @@ export default function ClientesPage() {
     }
   }, [debouncedSearchTerm]);
 
+  // Filtragem no frontend por tipo de pessoa (PF / PJ)
+  const clientesFiltrados = useMemo(() => {
+    if (tipoPessoaFiltro === 'todos') return clientes;
+    return clientes.filter(c => (c.tipoPessoa || 'PF') === tipoPessoaFiltro);
+  }, [clientes, tipoPessoaFiltro]);
+
+  // Estatísticas / KPIs dos Clientes
+  const stats = useMemo(() => {
+    const total = clientes.length;
+    const pf = clientes.filter(c => (c.tipoPessoa || 'PF') === 'PF').length;
+    const pj = clientes.filter(c => c.tipoPessoa === 'PJ').length;
+    const comContato = clientes.filter(c => Boolean(c.telefone || c.whatsapp || c.email)).length;
+    return { total, pf, pj, comContato };
+  }, [clientes]);
+
   const handleSubmit = useCallback(async (data) => {
     try {
       setFormError(null);
-      
+
       if (data === null) {
         setShowForm(false);
         setClienteParaEditar(null);
@@ -80,10 +112,7 @@ export default function ClientesPage() {
         await adicionarCliente(data);
       }
 
-      // Não limpar o searchTerm para manter a busca atual
       setShowForm(false);
-      
-      // Não recarregar - o hook já atualiza o estado otimisticamente
     } catch (err) {
       setFormError(err.message);
     }
@@ -92,18 +121,10 @@ export default function ClientesPage() {
   const handleExcluir = useCallback(async () => {
     try {
       const clienteId = clienteParaExcluir.id;
-      
-      // Fechar modal imediatamente
       setClienteParaExcluir(null);
-      
-      // Deletar no Firebase - o hook useClientes já faz update otimista
       await deletarCliente(clienteId);
-      
-      // Invalidar cache para garantir consistência em próximas buscas
       invalidarCache();
-      
     } catch (err) {
-      // Em caso de erro, recarregar a lista para reverter o update otimista
       await listarClientes(debouncedSearchTerm);
     }
   }, [clienteParaExcluir, deletarCliente, invalidarCache, debouncedSearchTerm, listarClientes]);
@@ -112,89 +133,450 @@ export default function ClientesPage() {
     try {
       setClienteHistorico(cliente);
       setShowHistorico(true);
-      setHistoricoCompras([]); // Limpar dados anteriores imediatamente
-      
-      // Buscar histórico imediatamente
+      setHistoricoCompras([]);
+
       try {
         const historico = await obterHistoricoCliente(cliente.id);
         setHistoricoCompras(historico || []);
       } catch (error) {
+        console.error('Erro ao buscar histórico do cliente:', error);
         setHistoricoCompras([]);
       }
     } catch (error) {
-      setHistoricoCompras([]);
+      console.error('Erro ao abrir histórico do cliente:', error);
     }
   }, [obterHistoricoCliente]);
 
-  const handleShowDetalhes = useCallback((cliente) => {
+  const handleVerDetalhes = useCallback((cliente) => {
     setClienteDetalhes(cliente);
     setShowDetalhes(true);
   }, []);
 
-  // Função para buscar nome do produto pelo ID
   const getNomeProduto = useCallback((produtoId) => {
-    if (!produtos || produtos.length === 0) {
-      return produtoId;
-    }
     const produto = produtos.find(p => p.id === produtoId);
-    return produto?.nome || produtoId;
+    return produto ? produto.nome : 'Produto não identificado';
   }, [produtos]);
 
-  // Função para formatar data do Firebase
-  const formatarData = (data) => {
-    if (!data) return 'Data não informada';
-    try {
-      // Se for Timestamp do Firebase
-      if (data.toDate && typeof data.toDate === 'function') {
-        return data.toDate().toLocaleDateString('pt-BR');
-      }
-      // Se for Date ou string
-      return new Date(data).toLocaleDateString('pt-BR');
-    } catch (error) {
-      return 'Data inválida';
-    }
+  const obterIniciais = (nome) => {
+    if (!nome) return 'CL';
+    const partes = nome.trim().split(' ');
+    if (partes.length === 1) return partes[0].substring(0, 2).toUpperCase();
+    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
   };
 
   return (
     <PageLayout title="Clientes">
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="mb-8">
-          <p className="text-slate-600 dark:text-white">Gerencie seus clientes de forma simples e eficiente</p>
+      <div className="space-y-6 pb-12">
+        {/* ========================================================================= */}
+        {/* 1. CABEÇALHO */}
+        {/* ========================================================================= */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-all">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="p-2 bg-cyan-50 dark:bg-cyan-950/40 rounded-lg text-cyan-600 dark:text-cyan-400">
+                  <Users size={24} />
+                </div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                  Clientes
+                </h1>
+                <span className="ml-2 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300">
+                  {stats.total} cadastrados
+                </span>
+              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Gerencie seus clientes, contatos, localizações e histórico de compras.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow"
+              >
+                <Plus size={18} />
+                <span>Novo Cliente</span>
+              </button>
+            </div>
+          </div>
+
           {!isOnline && (
-            <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
-              <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-              Modo offline - algumas funcionalidades podem estar limitadas
+            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
+              <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+              Modo offline ativo - algumas operações serão sincronizadas assim que a conexão retornar.
             </div>
           )}
         </div>
 
-        {/* Controles de busca */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
-              <input
-                type="text"
-                placeholder="Buscar por nome, email ou telefone..."
-                className="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+        {/* ========================================================================= */}
+        {/* 2. CARDS DE INDICADORES (KPIS) */}
+        {/* ========================================================================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Total */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-cyan-400 dark:hover:border-cyan-500/50 transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Total de Clientes
+              </span>
+              <div className="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 flex items-center justify-center text-cyan-600 dark:text-cyan-400">
+                <Users size={20} />
+              </div>
             </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              {stats.total}
+            </div>
+            <p className="mt-2 text-xs text-slate-400">Base total cadastrada</p>
+          </div>
 
-            {/* Botão Novo Cliente */}
-            <button
-              onClick={() => setShowForm(true)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 sm:py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap"
-            >
-              <Plus size={18} />
-              Novo Cliente
-            </button>
+          {/* Card 2: PF */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500/50 transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Pessoa Física (PF)
+              </span>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                <User size={20} />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              {stats.pf}
+            </div>
+            <p className="mt-2 text-xs text-slate-400">
+              {stats.total > 0 ? `${((stats.pf / stats.total) * 100).toFixed(0)}% da base` : '0%'}
+            </p>
+          </div>
+
+          {/* Card 3: PJ */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Pessoa Jurídica (PJ)
+              </span>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <Building2 size={20} />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              {stats.pj}
+            </div>
+            <p className="mt-2 text-xs text-slate-400">
+              {stats.total > 0 ? `${((stats.pj / stats.total) * 100).toFixed(0)}% da base` : '0%'}
+            </p>
+          </div>
+
+          {/* Card 4: Contato */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-purple-400 dark:hover:border-purple-500/50 transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Com Contato Válido
+              </span>
+              <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                <Phone size={20} />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              {stats.comContato}
+            </div>
+            <p className="mt-2 text-xs text-slate-400">Telefone, WhatsApp ou e-mail</p>
           </div>
         </div>
 
-        {/* Formulário de cadastro/edição */}
+        {/* ========================================================================= */}
+        {/* 3. FILTROS & BARRA DE BUSCA */}
+        {/* ========================================================================= */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 transition-all">
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+            {/* Campo de Busca */}
+            <div className="relative flex-1 max-w-lg">
+              <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                type="text"
+                placeholder="Buscar por nome, CPF/CNPJ, telefone ou e-mail..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Filtro Tipo PF/PJ */}
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
+              <button
+                onClick={() => setTipoPessoaFiltro('todos')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  tipoPessoaFiltro === 'todos'
+                    ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+              >
+                Todos ({stats.total})
+              </button>
+              <button
+                onClick={() => setTipoPessoaFiltro('PF')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  tipoPessoaFiltro === 'PF'
+                    ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+              >
+                Pessoa Física ({stats.pf})
+              </button>
+              <button
+                onClick={() => setTipoPessoaFiltro('PJ')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  tipoPessoaFiltro === 'PJ'
+                    ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+              >
+                Pessoa Jurídica ({stats.pj})
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* 4. TABELA DE CLIENTES */}
+        {/* ========================================================================= */}
+        {loading && carregamentoInicial ? (
+          <ClientesSkeleton />
+        ) : error ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center">
+            <div className="text-rose-500 font-semibold mb-2">
+              {isOnline ? 'Erro ao carregar clientes' : 'Sem conexão'}
+            </div>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{error}</p>
+            <button
+              onClick={() => listarClientes(debouncedSearchTerm)}
+              className="px-4 py-2 bg-cyan-500 text-white rounded-xl text-sm font-semibold hover:bg-cyan-600 transition-colors"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : clientesFiltrados.length === 0 ? (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+            <EmptyState
+              icon={Users}
+              title={searchTerm ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
+              description={searchTerm ? 'Tente ajustar os termos de busca ou filtros' : 'Comece cadastrando seu primeiro cliente no sistema'}
+              actionText={!searchTerm ? 'Novo Cliente' : undefined}
+              onAction={!searchTerm ? () => setShowForm(true) : undefined}
+            />
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            {/* Desktop Table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                    <th className="py-3.5 px-4">Cliente</th>
+                    <th className="py-3.5 px-4">Contato</th>
+                    <th className="py-3.5 px-4">CPF / CNPJ</th>
+                    <th className="py-3.5 px-4">Localização</th>
+                    <th className="py-3.5 px-4 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                  {clientesFiltrados.map((cliente) => (
+                    <tr
+                      key={cliente.id}
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors"
+                    >
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${
+                            cliente.tipoPessoa === 'PJ'
+                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                              : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          }`}>
+                            {obterIniciais(cliente.nome)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-[9px] uppercase font-bold px-1.5 py-0.2 rounded ${
+                                cliente.tipoPessoa === 'PJ'
+                                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                                  : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                              }`}>
+                                {cliente.tipoPessoa || 'PF'}
+                              </span>
+                              <p className="font-semibold text-slate-900 dark:text-slate-100 text-xs">
+                                {cliente.nome}
+                              </p>
+                            </div>
+                            {(cliente.apelido || cliente.razaoSocial) && (
+                              <p className="text-[11px] text-slate-400 mt-0.5">
+                                {cliente.apelido || cliente.razaoSocial}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="space-y-0.5">
+                          <p className="text-slate-700 dark:text-slate-200 font-medium">
+                            {cliente.telefone || '-'}
+                          </p>
+                          {cliente.whatsapp && cliente.whatsapp !== cliente.telefone && (
+                            <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                              Zap: {cliente.whatsapp}
+                            </p>
+                          )}
+                          {cliente.email && (
+                            <p className="text-[11px] text-slate-400 truncate max-w-[180px]">
+                              {cliente.email}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span className="font-mono text-slate-600 dark:text-slate-300">
+                          {cliente.cpf || '-'}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                          <MapPin size={13} className="text-slate-400 flex-shrink-0" />
+                          <span className="truncate max-w-[200px]">
+                            {[cliente.bairro, cliente.cidade, cliente.estado].filter(Boolean).join(' - ') || 'Não informado'}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleVerDetalhes(cliente)}
+                            className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 rounded-lg transition-all"
+                            title="Ver detalhes"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleShowHistorico(cliente)}
+                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-all"
+                            title="Histórico de compras"
+                          >
+                            <History size={16} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setClienteParaEditar(cliente);
+                              setShowForm(true);
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-all"
+                            title="Editar cliente"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => setClienteParaExcluir(cliente)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-all"
+                            title="Excluir cliente"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="lg:hidden divide-y divide-slate-100 dark:divide-slate-700/60">
+              {clientesFiltrados.map((cliente) => (
+                <div key={cliente.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${
+                        cliente.tipoPessoa === 'PJ'
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                      }`}>
+                        {obterIniciais(cliente.nome)}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[9px] uppercase font-bold px-1.5 py-0.2 rounded ${
+                            cliente.tipoPessoa === 'PJ'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-emerald-100 text-emerald-700'
+                          }`}>
+                            {cliente.tipoPessoa || 'PF'}
+                          </span>
+                          <h4 className="font-semibold text-sm text-slate-900 dark:text-slate-100">
+                            {cliente.nome}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {cliente.telefone || 'Sem telefone'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleVerDetalhes(cliente)}
+                        className="p-1.5 text-slate-400 hover:text-cyan-600 rounded-lg"
+                        title="Detalhes"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleShowHistorico(cliente)}
+                        className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg"
+                        title="Histórico"
+                      >
+                        <History size={16} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setClienteParaEditar(cliente);
+                          setShowForm(true);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg"
+                        title="Editar"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => setClienteParaExcluir(cliente)}
+                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
+                        title="Excluir"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-slate-500 space-y-0.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <p><span className="font-medium text-slate-700 dark:text-slate-300">Documento:</span> {cliente.cpf || 'Não informado'}</p>
+                    {cliente.cidade && (
+                      <p><span className="font-medium text-slate-700 dark:text-slate-300">Cidade:</span> {[cliente.bairro, cliente.cidade].filter(Boolean).join(' - ')}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* MODAL FORMULÁRIO DE CADASTRO / EDIÇÃO */}
+        {/* ========================================================================= */}
         <Modal
           isOpen={showForm}
           onClose={() => {
@@ -208,326 +590,117 @@ export default function ClientesPage() {
         >
           <div className={savingLoading ? 'opacity-75 pointer-events-none' : ''}>
             {formError && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl">
+              <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-medium">
                 {formError}
               </div>
             )}
             {savingLoading && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-xl flex items-center gap-2">
+              <div className="mb-4 p-3 bg-cyan-50 border border-cyan-200 text-cyan-700 rounded-xl flex items-center gap-2 text-xs">
                 <LoadingSpinner size="sm" />
-                <span>Salvando cliente...</span>
+                <span>Salvando dados do cliente...</span>
               </div>
             )}
             <ClienteForm
               onSubmit={handleSubmit}
               initialData={clienteParaEditar}
-              loading={savingLoading}
+              isEditing={!!clienteParaEditar}
             />
           </div>
         </Modal>
 
-        {/* Lista de clientes */}
-        {loading && carregamentoInicial ? (
-          <ClientesSkeleton />
-        ) : error ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center">
-            <div className="text-red-500 font-medium mb-2">
-              {isOnline ? 'Erro ao carregar clientes' : 'Sem conexão'}
-            </div>
-            <p className="text-slate-600 dark:text-white mb-4">{error}</p>
-            <div className="flex gap-2 justify-center">
-              <button 
-                onClick={() => listarClientes(debouncedSearchTerm)}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                disabled={!isOnline}
-              >
-                {isOnline ? 'Tentar novamente' : 'Aguardando conexão'}
-              </button>
-              {!isOnline && (
-                <button 
-                  onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                >
-                  Recarregar página
-                </button>
-              )}
-            </div>
-          </div>
-        ) : clientes.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-            <EmptyState 
-              icon={Users}
-              title={searchTerm ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
-              description={searchTerm ? 'Tente ajustar os termos de busca' : 'Comece criando seu primeiro cliente'}
-              actionText={!searchTerm ? 'Novo Cliente' : undefined}
-              onAction={!searchTerm ? () => setShowForm(true) : undefined}
-            />
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            {/* Indicador de loading apenas para busca/carregamento de dados */}
-            {loading && !carregamentoInicial && searchTerm && (
-              <div className="absolute inset-0 bg-white dark:bg-slate-800 bg-opacity-75 flex items-center justify-center z-10">
-                <LoadingSpinner size="sm" text="Buscando clientes..." />
-              </div>
-            )}
-            <div className="relative">
-              {/* Desktop Table */}
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="min-w-full">
-                  <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Cliente
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Contato
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        CPF / CNPJ
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Localização
-                      </th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Ações
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                    {clientes.map((cliente, index) => (
-                      <tr
-                        key={cliente.id}
-                        className={`hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 ${
-                          index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-25 dark:bg-slate-800/50'
-                        }`}
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                              cliente.tipoPessoa === 'PJ'
-                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                            }`}>
-                              {cliente.tipoPessoa || 'PF'}
-                            </span>
-                            <div>
-                              <p className="font-medium text-slate-900 dark:text-slate-100">
-                                {cliente.nome}
-                              </p>
-                              {(cliente.apelido || cliente.razaoSocial) && (
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                  {cliente.apelido || cliente.razaoSocial}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm">
-                            <p className="text-slate-700 dark:text-slate-200">{cliente.telefone || '-'}</p>
-                            {cliente.whatsapp && (
-                              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                                Zap: {cliente.whatsapp}
-                              </p>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-slate-600 dark:text-slate-300">{cliente.cpf || '-'}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-slate-600 dark:text-slate-300">
-                            {[cliente.bairro, cliente.cidade, cliente.estado].filter(Boolean).join(' - ') || '-'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex justify-end items-center gap-2">
-                            <button
-                              onClick={() => handleShowDetalhes(cliente)}
-                              className="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-200"
-                              title="Ver detalhes do cliente"
-                            >
-                              <Eye size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleShowHistorico(cliente)}
-                              className="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200"
-                              title="Ver histórico de compras"
-                            >
-                              <History size={16} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setClienteParaEditar(cliente);
-                                setShowForm(true);
-                              }}
-                              className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
-                              title="Editar cliente"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => setClienteParaExcluir(cliente)}
-                              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
-                              title="Excluir cliente"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Cards */}
-              <div className="lg:hidden divide-y divide-slate-100 dark:divide-slate-700">
-                {clientes.map((cliente) => (
-                  <div key={cliente.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="font-medium text-slate-900 dark:text-slate-100">
-                          {cliente.nome}
-                        </h4>
-                        <p className="text-sm text-slate-600 dark:text-white">{cliente.telefone || 'Telefone não informado'}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleShowDetalhes(cliente)}
-                          className="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-200"
-                          title="Ver detalhes"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleShowHistorico(cliente)}
-                          className="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200"
-                          title="Histórico"
-                        >
-                          <History size={16} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setClienteParaEditar(cliente);
-                            setShowForm(true);
-                          }}
-                          className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
-                          title="Editar"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => setClienteParaExcluir(cliente)}
-                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
-                          title="Excluir"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="text-sm text-slate-600 dark:text-white space-y-1">
-                      <p><span className="font-medium">CPF:</span> {cliente.cpf || 'Não informado'}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal de confirmação de exclusão */}
+        {/* ========================================================================= */}
+        {/* MODAL CONFIRMAÇÃO DE EXCLUSÃO */}
+        {/* ========================================================================= */}
         <Modal
           isOpen={!!clienteParaExcluir}
           onClose={() => setClienteParaExcluir(null)}
           title="Confirmar Exclusão"
           footer={
-            <>
+            <div className="flex items-center gap-2 justify-end">
               <button
-                className="px-4 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg font-medium transition-all duration-200"
+                className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-all"
                 onClick={() => setClienteParaExcluir(null)}
               >
                 Cancelar
               </button>
               <button
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all duration-200"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition-all shadow-sm"
                 onClick={handleExcluir}
               >
-                Excluir
+                Excluir Cliente
               </button>
-            </>
+            </div>
           }
         >
-          <div className="p-6">
+          <div className="p-4">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <Trash2 className="text-red-500" size={20} />
+              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-950/40 rounded-xl flex items-center justify-center flex-shrink-0 text-rose-600">
+                <Trash2 size={22} />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                  Excluir cliente {clienteParaExcluir?.nome}
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">
+                  Excluir {clienteParaExcluir?.nome}?
                 </h3>
-                <p className="text-slate-600 dark:text-white">
-                  Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Tem certeza que deseja remover este cliente? Todos os dados associados a este registro deixarão de ser vinculados.
                 </p>
               </div>
             </div>
           </div>
         </Modal>
 
-        {/* Modal de histórico de compras */}
+        {/* ========================================================================= */}
+        {/* MODAL HISTÓRICO DE COMPRAS */}
+        {/* ========================================================================= */}
         {showHistorico && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full mx-4 max-h-96 overflow-y-auto">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 relative">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 pr-8">
-                  Histórico de Compras - {clienteHistorico?.nome || ''}
-                </h3>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowHistorico(false)}>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto border border-slate-200 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
+              <div className="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between sticky top-0 bg-white dark:bg-slate-800 z-10">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    Histórico de Compras
+                  </h3>
+                  <p className="text-xs text-slate-500">{clienteHistorico?.nome}</p>
+                </div>
                 <button
-                  onClick={() => {
-                    setShowHistorico(false);
-                    setClienteHistorico(null);
-                  }}
-                  className="absolute top-4 right-4 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-200"
+                  onClick={() => setShowHistorico(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
-              <div className="p-4">
+
+              <div className="p-5">
                 {historicoCompras.length === 0 ? (
-                  <p className="text-center text-gray-500 dark:text-gray-400">
+                  <p className="text-center text-xs text-slate-400 py-6">
                     Nenhuma compra registrada para este cliente.
                   </p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {historicoCompras.map((venda) => (
                       <div
                         key={venda.id}
-                        onClick={() => {
-                          navigate('/vendas', { state: { vendaId: venda.id } });
-                        }}
-                        className="border border-gray-200 dark:border-gray-700 rounded p-3 space-y-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                        >
-                          <div className="flex justify-between text-sm">
-                            <span className="font-medium">
-                              {formatarData(venda.dataVenda)}
-                            </span>
-                            <span className="text-blue-600 font-medium">
-                              R$ {(venda.valorTotal || 0).toFixed(2)}
-                            </span>
-                          </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                        onClick={() => navigate('/vendas', { state: { vendaId: venda.id } })}
+                        className="p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-cyan-400 transition-all cursor-pointer"
+                      >
+                        <div className="flex justify-between items-center text-xs mb-2">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {venda.dataVenda ? formatarData(venda.dataVenda) : '-'}
+                          </span>
+                          <span className="text-cyan-600 dark:text-cyan-400 font-bold">
+                            R$ {(venda.valorTotal || 0).toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
                           {venda.itens && venda.itens.length > 0 ? (
-                            venda.itens.map((item, index) => (
-                                <div key={index} className="flex justify-between">
-                                  <span>{item.produtoNome || getNomeProduto(item.produto)}</span>
-                                  <span>{formatQuantity(item.quantidade || 1)}x R$ {(item.valorUnitario || 0).toFixed(2)}</span>
-                                </div>
-                              ))
+                            venda.itens.map((item, idx) => (
+                              <div key={idx} className="flex justify-between">
+                                <span className="truncate max-w-[200px]">{item.produtoNome || getNomeProduto(item.produto)}</span>
+                                <span>{formatQuantity(item.quantidade || 1)}x R$ {(item.valorUnitario || 0).toFixed(2)}</span>
+                              </div>
+                            ))
                           ) : (
-                            <div className="text-gray-400 dark:text-gray-500 italic">Itens não especificados</div>
+                            <span className="italic text-slate-400">Itens não detalhados</span>
                           )}
                         </div>
                       </div>
@@ -539,7 +712,9 @@ export default function ClientesPage() {
           </div>
         )}
 
-        {/* Modal de detalhes do cliente */}
+        {/* ========================================================================= */}
+        {/* MODAL DETALHES DO CLIENTE */}
+        {/* ========================================================================= */}
         <Modal
           isOpen={showDetalhes}
           onClose={() => {
@@ -550,147 +725,106 @@ export default function ClientesPage() {
           size="lg"
         >
           {clienteDetalhes && (
-            <div className="space-y-6">
-              {/* Dados Pessoais / Empresariais */}
+            <div className="space-y-5 p-2">
               <div>
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
-                  <Users size={20} />
-                  Dados do Cliente ({clienteDetalhes.tipoPessoa || 'PF'})
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">
-                      {clienteDetalhes.tipoPessoa === 'PJ' ? 'Razão Social' : 'Nome'}
-                    </label>
-                    <p className="text-slate-900 dark:text-slate-100 font-medium">{clienteDetalhes.nome || 'Não informado'}</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-cyan-50 dark:bg-cyan-950/40 rounded-lg text-cyan-600">
+                    <User size={18} />
                   </div>
-                  {clienteDetalhes.razaoSocial && clienteDetalhes.razaoSocial !== clienteDetalhes.nome && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-600 dark:text-white">Razão Social</label>
-                      <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.razaoSocial}</p>
-                    </div>
-                  )}
-                  {clienteDetalhes.apelido && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-600 dark:text-white">
-                        {clienteDetalhes.tipoPessoa === 'PJ' ? 'Nome Fantasia' : 'Apelido'}
-                      </label>
-                      <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.apelido}</p>
-                    </div>
-                  )}
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    Dados Principais ({clienteDetalhes.tipoPessoa || 'PF'})
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Telefone</label>
-                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.telefone || 'Não informado'}</p>
+                    <span className="text-slate-400 block mb-0.5">Nome / Razão Social:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{clienteDetalhes.nome}</span>
                   </div>
-                  {clienteDetalhes.whatsapp && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-600 dark:text-white">WhatsApp</label>
-                      <p className="text-emerald-600 dark:text-emerald-400 font-semibold">{clienteDetalhes.whatsapp}</p>
-                    </div>
-                  )}
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">
-                      {clienteDetalhes.tipoPessoa === 'PJ' ? 'CNPJ' : 'CPF'}
-                    </label>
-                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.cpf || 'Não informado'}</p>
+                    <span className="text-slate-400 block mb-0.5">Documento (CPF/CNPJ):</span>
+                    <span className="font-mono text-slate-800 dark:text-slate-200">{clienteDetalhes.cpf || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-0.5">Telefone:</span>
+                    <span className="text-slate-800 dark:text-slate-200">{clienteDetalhes.telefone || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-0.5">WhatsApp:</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{clienteDetalhes.whatsapp || '-'}</span>
                   </div>
                   {clienteDetalhes.email && (
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-slate-600 dark:text-white">E-mail</label>
-                      <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.email}</p>
+                    <div className="sm:col-span-2">
+                      <span className="text-slate-400 block mb-0.5">E-mail:</span>
+                      <span className="text-slate-800 dark:text-slate-200">{clienteDetalhes.email}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Endereço / Local de Instalação */}
-              <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">
-                  Endereço / Local de Instalação
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Endereço</label>
-                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.endereco || 'Não informado'}</p>
+              {/* Endereço */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-cyan-50 dark:bg-cyan-950/40 rounded-lg text-cyan-600">
+                    <MapPin size={18} />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    Endereço de Atendimento
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <div className="sm:col-span-2">
+                    <span className="text-slate-400 block mb-0.5">Logradouro:</span>
+                    <span className="text-slate-800 dark:text-slate-200">{clienteDetalhes.endereco || 'Não informado'}</span>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Complemento</label>
-                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.complemento || 'Não informado'}</p>
+                    <span className="text-slate-400 block mb-0.5">Complemento:</span>
+                    <span className="text-slate-800 dark:text-slate-200">{clienteDetalhes.complemento || '-'}</span>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Bairro</label>
-                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.bairro || 'Não informado'}</p>
+                    <span className="text-slate-400 block mb-0.5">Bairro:</span>
+                    <span className="text-slate-800 dark:text-slate-200">{clienteDetalhes.bairro || '-'}</span>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Cidade</label>
-                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.cidade || 'Não informado'}</p>
+                    <span className="text-slate-400 block mb-0.5">Cidade:</span>
+                    <span className="text-slate-800 dark:text-slate-200">{clienteDetalhes.cidade || '-'}</span>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Estado</label>
-                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.estado || 'Não informado'}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">CEP</label>
-                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.cep || 'Não informado'}</p>
+                    <span className="text-slate-400 block mb-0.5">Estado:</span>
+                    <span className="text-slate-800 dark:text-slate-200">{clienteDetalhes.estado || '-'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Observações */}
               {clienteDetalhes.observacoes && (
-                <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-                  <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">Observações</h3>
-                  <p className="text-slate-900 dark:text-slate-100 whitespace-pre-wrap">{clienteDetalhes.observacoes}</p>
+                <div className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl text-xs">
+                  <span className="text-slate-400 font-semibold block mb-1">Observações Técnicas:</span>
+                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{clienteDetalhes.observacoes}</p>
                 </div>
               )}
 
-              {/* Datas */}
-              <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">Informações de Cadastro</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  {clienteDetalhes.criadoEm && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-600 dark:text-white">Cadastrado em</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {new Date(clienteDetalhes.criadoEm.seconds ? clienteDetalhes.criadoEm.toDate() : clienteDetalhes.criadoEm).toLocaleString('pt-BR')}
-                      </p>
-                    </div>
-                  )}
-                  {clienteDetalhes.atualizadoEm && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-600 dark:text-white">Última atualização</label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {new Date(clienteDetalhes.atualizadoEm.seconds ? clienteDetalhes.atualizadoEm.toDate() : clienteDetalhes.atualizadoEm).toLocaleString('pt-BR')}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Botões de ação */}
-              <div className="border-t border-slate-200 dark:border-slate-700 pt-6 flex gap-3">
+              {/* Ações do Modal */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
                 <button
                   onClick={() => {
                     setShowDetalhes(false);
-                    setClienteDetalhes(null);
                     handleShowHistorico(clienteDetalhes);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-200"
+                  className="px-3.5 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
                 >
-                  <History size={16} />
-                  Ver Histórico
+                  <History size={15} />
+                  Ver Histórico de Compras
                 </button>
                 <button
                   onClick={() => {
                     setClienteParaEditar(clienteDetalhes);
-                    setShowForm(true);
                     setShowDetalhes(false);
-                    setClienteDetalhes(null);
+                    setShowForm(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-200"
+                  className="px-3.5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
                 >
-                  <Edit size={16} />
-                  Editar
+                  <Edit size={15} />
+                  Editar Cliente
                 </button>
               </div>
             </div>
