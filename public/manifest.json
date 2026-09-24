@@ -1,11 +1,11 @@
 {
-  "name": "Serra do Félix - Material de Construção",
-  "short_name": "Serra do Félix",
+  "name": "Zeu-Tech",
+  "short_name": "Zeu-Tech",
   "description": "Sistema de gestão para depósito de materiais de construção",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#f97316",
+  "theme_color": "#00c8ff",
   "orientation": "portrait-primary",
   "icons": [
     {

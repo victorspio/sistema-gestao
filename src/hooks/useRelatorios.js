@@ -7,15 +7,12 @@ import {
   getDocs,
   limit
 } from 'firebase/firestore';
-import { useSystem } from '../contexts/SystemContext';
-import { dbDeposito } from '../services/firebase';
+import { db } from '../services/firebase';
 
 export function useRelatorios() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const { activeSystem } = useSystem();
-  const db = activeSystem?.db ?? dbDeposito;
   const col = (name) => collection(db, name);
 
   async function relatorioVendasPeriodo(dataInicio, dataFim) {

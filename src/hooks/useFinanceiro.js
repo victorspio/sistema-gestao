@@ -11,8 +11,7 @@ import {
   getDocs,
   serverTimestamp
 } from 'firebase/firestore';
-import { useSystem } from '../contexts/SystemContext';
-import { dbDeposito } from '../services/firebase';
+import { db } from '../services/firebase';
 
 export function useFinanceiro() {
   const [contasReceber, setContasReceber] = useState([]);
@@ -21,8 +20,6 @@ export function useFinanceiro() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const { activeSystem } = useSystem();
-  const db = activeSystem?.db ?? dbDeposito;
   const col = (name) => collection(db, name);
   const colDoc = (name, id) => doc(db, name, id);
 

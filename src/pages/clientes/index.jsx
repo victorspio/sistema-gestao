@@ -48,20 +48,13 @@ export default function ClientesPage() {
 
   // Carregamento inicial otimizado
   useEffect(() => {
-    const carregarDadosIniciais = async () => {
-      try {
-        await Promise.all([
-          listarClientes(),
-          listarProdutos()
-        ]);
-      } catch (error) {
-        console.error('Erro ao carregar dados iniciais:', error);
-      } finally {
-        setCarregamentoInicial(false);
-      }
-    };
-    carregarDadosIniciais();
-  }, []);
+    let mounted = true;
+    listarClientes().finally(() => {
+      if (mounted) setCarregamentoInicial(false);
+    });
+    listarProdutos().catch(err => console.error('Erro ao carregar produtos:', err));
+    return () => { mounted = false; };
+  }, [listarClientes, listarProdutos]);
 
   // Recarrega clientes quando o termo de busca muda (com debounce)
   useEffect(() => {
@@ -288,13 +281,16 @@ export default function ClientesPage() {
                   <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
                     <tr>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Nome
+                        Cliente
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Telefone
+                        Contato
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        CPF
+                        CPF / CNPJ
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Localização
                       </th>
                       <th className="px-6 py-4 text-right text-sm font-semibold text-slate-700 dark:text-slate-300">
                         Ações
@@ -310,15 +306,43 @@ export default function ClientesPage() {
                         }`}
                       >
                         <td className="px-6 py-4">
-                          <span className="font-medium text-slate-900 dark:text-slate-100">
-                            {cliente.nome}
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                              cliente.tipoPessoa === 'PJ'
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                            }`}>
+                              {cliente.tipoPessoa || 'PF'}
+                            </span>
+                            <div>
+                              <p className="font-medium text-slate-900 dark:text-slate-100">
+                                {cliente.nome}
+                              </p>
+                              {(cliente.apelido || cliente.razaoSocial) && (
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {cliente.apelido || cliente.razaoSocial}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm">
+                            <p className="text-slate-700 dark:text-slate-200">{cliente.telefone || '-'}</p>
+                            {cliente.whatsapp && (
+                              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                                Zap: {cliente.whatsapp}
+                              </p>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-slate-600 dark:text-slate-300">{cliente.cpf || '-'}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm text-slate-600 dark:text-slate-300">
+                            {[cliente.bairro, cliente.cidade, cliente.estado].filter(Boolean).join(' - ') || '-'}
                           </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-slate-600 dark:text-white">{cliente.telefone || '-'}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-slate-600 dark:text-white">{cliente.cpf || '-'}</span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex justify-end items-center gap-2">
@@ -530,20 +554,30 @@ export default function ClientesPage() {
         >
           {clienteDetalhes && (
             <div className="space-y-6">
-              {/* Dados Pessoais */}
+              {/* Dados Pessoais / Empresariais */}
               <div>
                 <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
                   <Users size={20} />
-                  Dados Pessoais
+                  Dados do Cliente ({clienteDetalhes.tipoPessoa || 'PF'})
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Nome</label>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-white">
+                      {clienteDetalhes.tipoPessoa === 'PJ' ? 'Razão Social' : 'Nome'}
+                    </label>
                     <p className="text-slate-900 dark:text-slate-100 font-medium">{clienteDetalhes.nome || 'Não informado'}</p>
                   </div>
+                  {clienteDetalhes.razaoSocial && clienteDetalhes.razaoSocial !== clienteDetalhes.nome && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-600 dark:text-white">Razão Social</label>
+                      <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.razaoSocial}</p>
+                    </div>
+                  )}
                   {clienteDetalhes.apelido && (
                     <div>
-                      <label className="block text-sm font-medium text-slate-600 dark:text-white">Apelido</label>
+                      <label className="block text-sm font-medium text-slate-600 dark:text-white">
+                        {clienteDetalhes.tipoPessoa === 'PJ' ? 'Nome Fantasia' : 'Apelido'}
+                      </label>
                       <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.apelido}</p>
                     </div>
                   )}
@@ -551,8 +585,16 @@ export default function ClientesPage() {
                     <label className="block text-sm font-medium text-slate-600 dark:text-white">Telefone</label>
                     <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.telefone || 'Não informado'}</p>
                   </div>
+                  {clienteDetalhes.whatsapp && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-600 dark:text-white">WhatsApp</label>
+                      <p className="text-emerald-600 dark:text-emerald-400 font-semibold">{clienteDetalhes.whatsapp}</p>
+                    </div>
+                  )}
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">CPF</label>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-white">
+                      {clienteDetalhes.tipoPessoa === 'PJ' ? 'CNPJ' : 'CPF'}
+                    </label>
                     <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.cpf || 'Não informado'}</p>
                   </div>
                   {clienteDetalhes.email && (
@@ -564,13 +606,23 @@ export default function ClientesPage() {
                 </div>
               </div>
 
-              {/* Endereço */}
+              {/* Endereço / Local de Instalação */}
               <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">Endereço</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">
+                  Endereço / Local de Instalação
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Endereço Completo</label>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Endereço</label>
                     <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.endereco || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Complemento</label>
+                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.complemento || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-white">Bairro</label>
+                    <p className="text-slate-900 dark:text-slate-100">{clienteDetalhes.bairro || 'Não informado'}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-600 dark:text-white">Cidade</label>

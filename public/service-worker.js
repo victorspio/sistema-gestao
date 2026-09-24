@@ -1,15 +1,14 @@
 // Service Worker para cache offline e melhor performance
 const CACHE_VERSION = Date.now();
-const CACHE_NAME = `serra-felix-v${CACHE_VERSION}`;
-const RUNTIME_CACHE = `serra-felix-runtime-v${CACHE_VERSION}`;
+const CACHE_NAME = `zeu-tech-v${CACHE_VERSION}`;
+const RUNTIME_CACHE = `zeu-tech-runtime-v${CACHE_VERSION}`;
 
 // Arquivos essenciais para cache
 const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo-serra-felix.png',
-  '/logo-casa-racao.png'
+  '/logo.png'
 ];
 
 // Instala o service worker e faz cache dos arquivos essenciais

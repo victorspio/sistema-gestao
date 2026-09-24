@@ -14,15 +14,15 @@ export const adicionarCabecalho = async (doc, titulo, dataInicio, dataFim) => {
   
   // Logo
   try {
-    const logoBase64 = await getImageBase64('/logo-serra-felix.png');
+    const logoBase64 = await getImageBase64('/logo.png');  // TODO: Atualize se mudar o nome do logo
     const { x, y, width, height } = HEADER_CONFIG.logoPosition;
     doc.addImage(logoBase64, 'PNG', x, y, width, height);
   } catch (error) {
     doc.setTextColor(...COLORS.white);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('DEPÓSITO', 20, 18);
-    doc.text('CONSTRUÇÃO', 20, 24);
+    doc.text('EMPRESA', 20, 18);      // TODO: Nome da empresa
+    doc.text('SISTEMA', 20, 24);      // TODO: Subtítulo
   }
   
   // Linha separadora

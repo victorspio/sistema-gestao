@@ -11,20 +11,15 @@ import {
   limit, 
   getDocs
 } from 'firebase/firestore';
-import { useSystem } from '../contexts/SystemContext';
-import { dbDeposito } from '../services/firebase';
-import { checkFirebaseConnection } from '../utils/firebaseInit';
+import { db } from '../services/firebase';
 
-const retryOperation = async (operation, maxRetries = 3, delay = 1000, timeout = 10000) => {
-  for (let i = 0; i < maxRetries; i++) {
+const retryOperation = async (fn, retries = 2, delay = 500) => {
+  for (let i = 0; i < retries; i++) {
     try {
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout na operação')), timeout)
-      );
-      return await Promise.race([operation(), timeoutPromise]);
-    } catch (error) {
-      if (i === maxRetries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+      return await fn();
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, delay));
     }
   }
 };
@@ -38,8 +33,6 @@ export function useClientes() {
   const [ultimaBusca, setUltimaBusca] = useState('');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  const { activeSystem } = useSystem();
-  const db = activeSystem?.db ?? dbDeposito;
   const col = (name) => collection(db, name);
   const colDoc = (name, id) => doc(db, name, id);
 
@@ -52,7 +45,7 @@ export function useClientes() {
   }, []);
 
   async function listarClientes(searchTerm = '') {
-    const cacheKey = `clientes_${activeSystem?.id ?? 'deposito'}_${searchTerm || 'all'}`;
+    const cacheKey = `clientes_${searchTerm || 'all'}`;
     if (cache.has(cacheKey)) {
       const dadosCache = cache.get(cacheKey);
       if (Date.now() - dadosCache.timestamp < 120000) {
@@ -79,21 +72,21 @@ export function useClientes() {
       setError(null);
       setUltimaBusca(searchTerm);
 
-      const connectionCheck = await checkFirebaseConnection();
-      if (!connectionCheck.success) throw new Error(`Falha na conexão: ${connectionCheck.message}`);
-
-      const snapshot = await retryOperation(
-        async () => getDocs(query(col('clientes'), orderBy('nome'), limit(50))),
-        2, 800, 6000
-      );
+      const snapshot = await getDocs(query(col('clientes'), orderBy('nome'), limit(100)));
       let clientesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
       if (searchTerm && searchTerm.trim()) {
         const s = searchTerm.toLowerCase().trim();
         clientesData = clientesData.filter(c =>
-          c.nome?.toLowerCase().includes(s) || c.apelido?.toLowerCase().includes(s) ||
-          c.email?.toLowerCase().includes(s) || c.telefone?.includes(searchTerm) ||
-          c.cpf?.includes(searchTerm)
+          c.nome?.toLowerCase().includes(s) || 
+          c.razaoSocial?.toLowerCase().includes(s) ||
+          c.apelido?.toLowerCase().includes(s) ||
+          c.email?.toLowerCase().includes(s) || 
+          c.telefone?.includes(searchTerm) ||
+          c.whatsapp?.includes(searchTerm) ||
+          c.cpf?.includes(searchTerm) ||
+          c.cidade?.toLowerCase().includes(s) ||
+          c.bairro?.toLowerCase().includes(s)
         );
       }
 
@@ -115,12 +108,23 @@ export function useClientes() {
       setSavingLoading(true);
       setError(null);
       const clienteData = {
-        nome: dados.nome?.trim() || '', apelido: dados.apelido?.trim() || '',
-        email: dados.email?.trim() || '', telefone: dados.telefone?.trim() || '',
-        cpf: dados.cpf?.trim() || '', endereco: dados.endereco?.trim() || '',
-        cidade: dados.cidade?.trim() || '', estado: dados.estado?.trim() || '',
-        cep: dados.cep?.trim() || '', observacoes: dados.observacoes?.trim() || '',
-        criadoEm: new Date(), atualizadoEm: new Date()
+        tipoPessoa: dados.tipoPessoa || 'PF',
+        nome: dados.nome?.trim() || '',
+        razaoSocial: dados.razaoSocial?.trim() || '',
+        apelido: dados.apelido?.trim() || '',
+        email: dados.email?.trim() || '',
+        telefone: dados.telefone?.trim() || '',
+        whatsapp: dados.whatsapp?.trim() || '',
+        cpf: dados.cpf?.trim() || '',
+        endereco: dados.endereco?.trim() || '',
+        complemento: dados.complemento?.trim() || '',
+        bairro: dados.bairro?.trim() || '',
+        cidade: dados.cidade?.trim() || '',
+        estado: dados.estado?.trim() || '',
+        cep: dados.cep?.trim() || '',
+        observacoes: dados.observacoes?.trim() || '',
+        criadoEm: new Date(),
+        atualizadoEm: new Date()
       };
       const novoClienteTemp = { id: 'temp_' + Date.now(), ...clienteData };
       setClientes(prev => [novoClienteTemp, ...prev]);
@@ -142,11 +146,21 @@ export function useClientes() {
       setSavingLoading(true);
       setError(null);
       const dadosNormalizados = {
-        nome: dados.nome?.trim() || '', apelido: dados.apelido?.trim() || '',
-        email: dados.email?.trim() || '', telefone: dados.telefone?.trim() || '',
-        cpf: dados.cpf?.trim() || '', endereco: dados.endereco?.trim() || '',
-        cidade: dados.cidade?.trim() || '', estado: dados.estado?.trim() || '',
-        cep: dados.cep?.trim() || '', observacoes: dados.observacoes?.trim() || '',
+        tipoPessoa: dados.tipoPessoa || 'PF',
+        nome: dados.nome?.trim() || '',
+        razaoSocial: dados.razaoSocial?.trim() || '',
+        apelido: dados.apelido?.trim() || '',
+        email: dados.email?.trim() || '',
+        telefone: dados.telefone?.trim() || '',
+        whatsapp: dados.whatsapp?.trim() || '',
+        cpf: dados.cpf?.trim() || '',
+        endereco: dados.endereco?.trim() || '',
+        complemento: dados.complemento?.trim() || '',
+        bairro: dados.bairro?.trim() || '',
+        cidade: dados.cidade?.trim() || '',
+        estado: dados.estado?.trim() || '',
+        cep: dados.cep?.trim() || '',
+        observacoes: dados.observacoes?.trim() || '',
         atualizadoEm: new Date()
       };
       setClientes(prev => prev.map(c => c.id === id ? { ...c, ...dadosNormalizados } : c));

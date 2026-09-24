@@ -37,10 +37,10 @@ Procure pela constante `EMPRESA` e atualize:
 
 ```javascript
 export const EMPRESA = {
-  NOME: 'DEPÓSITO SERRA DO FÉLIX',                    // Nome da empresa
+  NOME: 'ZEU-TECH',                                   // Nome da empresa
   CNPJ: '00.000.000/0000-00',                        // CNPJ (substituir com o real)
   TELEFONE: '(00) 00000-0000',                       // Telefone de contato
-  EMAIL: 'contato@serra-felix.com.br',              // Email
+  EMAIL: 'contato@zeutech.com.br',                  // Email
   ENDERECO: 'Rua/Avenida, Número - Cidade, UF',    // Endereço
   INSCRICAO_ESTADUAL: '00.000.000.000.000',        // Inscrição Estadual
   MENSAGEM_RODAPE: 'Obrigado pela preferência!'    // Mensagem de agradecimento
@@ -51,10 +51,10 @@ export const EMPRESA = {
 
 ```javascript
 export const EMPRESA = {
-  NOME: 'DEPÓSITO SERRA DO FÉLIX',
+  NOME: 'ZEU-TECH',
   CNPJ: '12.345.678/0001-99',
   TELEFONE: '(31) 98765-4321',
-  EMAIL: 'vendas@serra-felix.com.br',
+  EMAIL: 'vendas@zeutech.com.br',
   ENDERECO: 'Rua Principal, 123 - Belo Horizonte, MG',
   INSCRICAO_ESTADUAL: '123.456.789.012',
   MENSAGEM_RODAPE: 'Obrigado pela preferência!'

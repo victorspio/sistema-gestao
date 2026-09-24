@@ -30,8 +30,7 @@ import {
 } from 'firebase/firestore';
 import { parseNFeXML, processarProdutosNFe } from '../utils/parseNFeXML';
 import { calcularEntradaEstoque, calcularPrecoBaseEntrada } from '../utils/conversaoUnidades';
-import { useSystem } from '../contexts/SystemContext';
-import { dbDeposito } from '../services/firebase';
+import { db } from '../services/firebase';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -60,8 +59,6 @@ export function useImportacaoNFe() {
    */
   const [pendenciaConversao, setPendenciaConversao] = useState(null);
 
-  const { activeSystem } = useSystem();
-  const db = activeSystem?.db ?? dbDeposito;
   const col    = (name)     => collection(db, name);
   const colDoc = (name, id) => doc(db, name, id);
 

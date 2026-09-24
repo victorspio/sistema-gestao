@@ -1,39 +1,26 @@
 import { formatCurrency, formatQuantity } from './formatters.js';
 
-// Configurações padrão por sistema
+// TODO: Preencha estes dados com as informações da empresa do cliente
 export const EMPRESA_CONFIGS = {
-  deposito: {
-    nome: 'Serra do Félix Materiais de Construção Ltda',
-    logoPath: '/logo-serra-felix.png',
-    logoAltText: 'Serra do Félix',
-    telefone: '(85) 9.8173-2039',
-    whatsapp: '(85) 9.8173-2039',
-    instagram: '_depositoserradofelix',
-    endereco: 'Av. Ester Fernandes, s/n',
-    cidade: 'Serra do Félix, Beberibe-CE',
+  app: {
+    nome: 'Nome da Empresa',            // TODO: Nome completo da empresa
+    logoPath: '/logo.png',              // TODO: Caminho do logo em public/
+    logoAltText: 'Logo da Empresa',     // TODO: Alt text do logo
+    telefone: '(00) 00000-0000',        // TODO: Telefone
+    whatsapp: '(00) 00000-0000',        // TODO: WhatsApp
+    instagram: '@empresa',              // TODO: Instagram
+    endereco: 'Endereço da empresa',    // TODO: Endereço
+    cidade: 'Cidade - UF',             // TODO: Cidade e estado
     cep: '',
-    cnpj: '12.345.678/0001-90',
-    ie: '123456789',
-  },
-  racao: {
-    nome: 'Casa de Ração Agro Serra do Félix',
-    logoPath: '/logo-casa-racao.png',
-    logoAltText: 'Casa de Ração',
-    telefone: '(85) 9.8238-2670',
-    whatsapp: '(85) 9.8238-2670',
-    instagram: '@agro.serradofelix',
-    endereco: 'Av. Ester Fernandes, s/n',
-    cidade: 'Serra do Félix, Beberibe-CE',
-    cep: '',
-    cnpj: '',
-    ie: '',
+    cnpj: '00.000.000/0000-00',        // TODO: CNPJ real
+    ie: '000000000',                   // TODO: Inscrição Estadual real
   },
 };
 
 /**
  * Converte imagem local para base64 para embutir no HTML
  */
-async function getLogoBase64(logoPath = '/logo-serra-felix.png') {
+async function getLogoBase64(logoPath = '/logo.png') {
   try {
     const response = await fetch(logoPath);
     const blob = await response.blob();
@@ -51,8 +38,8 @@ async function getLogoBase64(logoPath = '/logo-serra-felix.png') {
 /**
  * Gera o HTML do comprovante com dados dinâmicos
  */
-async function gerarHTMLComprovante(venda, cliente, produtos = [], empresaConfig = EMPRESA_CONFIGS.deposito) {
-  const cfg = { ...EMPRESA_CONFIGS.deposito, ...empresaConfig };
+async function gerarHTMLComprovante(venda, cliente, produtos = [], empresaConfig = EMPRESA_CONFIGS.app) {
+  const cfg = { ...EMPRESA_CONFIGS.app, ...empresaConfig };
   const logoBase64 = await getLogoBase64(cfg.logoPath);
 
   const logoHTML = logoBase64
@@ -666,7 +653,7 @@ async function gerarHTMLComprovante(venda, cliente, produtos = [], empresaConfig
  */
 export async function gerarComprovanteVenda(venda, cliente = {}, produtos = [], empresaConfig = null) {
   try {
-    const html = await gerarHTMLComprovante(venda, cliente, produtos, empresaConfig || EMPRESA_CONFIGS.deposito);
+    const html = await gerarHTMLComprovante(venda, cliente, produtos, empresaConfig || EMPRESA_CONFIGS.app);
 
     // Remove iframe anterior se existir
     const anterior = document.getElementById('__comprovante_iframe__');

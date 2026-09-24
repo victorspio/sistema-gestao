@@ -3,7 +3,7 @@
 ## Passo 1: Acessar o Console do Firebase
 
 1. Acesse: https://console.firebase.google.com
-2. Selecione o projeto: **deposito-serra-felix**
+2. Selecione o projeto: **zeu-tech**
 
 ## Passo 2: Habilitar Authentication
 
@@ -24,7 +24,7 @@
 ## Exemplo de Credenciais
 
 ```
-Email: admin@serrafelix.com
+Email: admin@zeutech.com
 Senha: Admin@2026
 ```
 

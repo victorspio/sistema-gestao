@@ -8,7 +8,6 @@ import ClienteForm from './ClienteForm';
 import { useClientes } from '../../hooks/useClientes';
 import { useEstoque } from '../../hooks/useEstoque';
 import { useFinanceiro } from '../../hooks/useFinanceiro';
-import { useSystem } from '../../contexts/SystemContext';
 import { db } from '../../services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
@@ -16,7 +15,6 @@ import {
   calcularVendaPorQuantidade,
   calcularVendaPorValor,
   validarIncrementoMinimo,
-  extrairPesoDoNome,
 } from '../../utils/conversaoUnidades';
 
 // Determina se um produto aceita venda fracionada pelo novo ou antigo campo
@@ -24,29 +22,19 @@ const produtoEhFracionavel = (produto) =>
   !!(produto?.permiteFragmentacao || produto?.vendaFracionada);
 
 // Determina se o produto deve exibir a caixa de fracionamento/peso na venda
-const produtoPrecisaFracionamento = (produto, isRacao) => {
+const produtoPrecisaFracionamento = (produto) => {
   if (!produto) return false;
-  if (produtoEhFracionavel(produto)) return true;
-  if (isRacao) {
-    const isKg = produto.unidade?.toLowerCase() === 'kg' || produto.unidade?.toLowerCase() === 'g';
-    const pesoBase = extrairPesoDoNome(produto.nome);
-    return isKg || pesoBase !== 1;
-  }
-  return false;
+  return produtoEhFracionavel(produto);
 };
 
-// Preço por unidade base do produto (compatível com ambos os modelos)
+// Preço por unidade base do produto (compatível com modelo fracionado)
 const precoBaseDosProduto = (produto) => {
   if (!produto) return 0;
   if (produto.permiteFragmentacao || produto.vendaFracionada) {
-    // Modelo explícito: precoVendaUnitario OU precoVenda / fatorConversao
     const fator = Number(produto.fatorConversao) || 1;
     return Number(produto.precoVendaUnitario) || (Number(produto.precoVenda) / fator);
   }
-  // Modelo legado ração: extrair do nome
-  const pesoBase = extrairPesoDoNome(produto.nome);
-  const isKg = produto.unidade?.toLowerCase() === 'kg' || produto.unidade?.toLowerCase() === 'g';
-  return isKg ? (produto.precoVenda || 0) : ((produto.precoVenda || 0) / pesoBase);
+  return Number(produto.precoVenda) || 0;
 };
 
 // Fator de conversão: quantas unidades de venda cabem em 1 unidade de estoque
@@ -55,9 +43,7 @@ const fatorDosProduto = (produto) => {
   if (produto.permiteFragmentacao || produto.vendaFracionada) {
     return Number(produto.fatorConversao) || 1;
   }
-  const isKg = produto.unidade?.toLowerCase() === 'kg' || produto.unidade?.toLowerCase() === 'g';
-  if (isKg) return 1;
-  return extrairPesoDoNome(produto.nome);
+  return 1;
 };
 
 export default function VendaForm({ onSubmit, clientes, initialData, onClienteAdicionado, onReloadVendas }) {
@@ -70,8 +56,6 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
   const [parcelas, setParcelas] = useState([]);
   // valoresFracionados: { [index]: { peso: string, valor: string } }
   const [valoresFracionados, setValoresFracionados] = useState({});
-  const { activeSystem } = useSystem();
-  const isRacao = activeSystem?.id === 'racao';
   const { adicionarCliente } = useClientes();
   const { produtos, listarProdutos } = useEstoque();
   const { contasReceber, listarContasReceber, receberConta } = useFinanceiro();
@@ -164,8 +148,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
         // Inicializa estado fracionado se for vendaFracionada ou produto da casa de ração
         if (produtoId) {
           const produto = produtos.find(p => p.id === produtoId);
-          if (produto && quantidade !== '') {
-            if (produto.vendaFracionada) {
+            if (produtoEhFracionavel(produto)) {
               const fator = Number(produto.fatorConversao) || 1;
               const pesoCalculado = quantidade * fator; // quantidade individual
               const valorTotalItem = (parseFloat(valorUnitario) || produto.precoVenda || 0) * quantidade;
@@ -173,17 +156,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                 peso: pesoCalculado > 0 ? pesoCalculado.toFixed(3) : '',
                 valor: valorTotalItem > 0 ? valorTotalItem.toFixed(2) : ''
               };
-            } else if (isRacao) {
-              const pesoBase = extrairPesoDoNome(produto.nome);
-              const isVendidoEmKg = produto.unidade?.toLowerCase() === 'kg' || produto.unidade?.toLowerCase() === 'g';
-              const pesoCalculado = isVendidoEmKg ? quantidade : quantidade * pesoBase;
-              const valorTotalItem = (parseFloat(valorUnitario) || produto.precoVenda || 0) * quantidade;
-              initialFracionados[index] = {
-                peso: pesoCalculado > 0 ? pesoCalculado.toFixed(3) : '',
-                valor: valorTotalItem > 0 ? valorTotalItem.toFixed(2) : ''
-              };
             }
-          }
         }
         
         return {
@@ -750,27 +723,16 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                     )}
                   </div>
 
-                  {produtoPrecisaFracionamento(produtoSelecionado, isRacao) ? (
+                  {produtoPrecisaFracionamento(produtoSelecionado) ? (
                     <div className="md:col-span-5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-3">
                       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-green-200 dark:border-green-800">
                         <Scale size={16} className="text-green-600 dark:text-green-400" />
                         <span className="text-xs font-semibold text-green-800 dark:text-green-300">
                           {(() => {
-                            const labelUnidade = (produtoSelecionado.unidade?.toLowerCase() === 'kg' || produtoSelecionado.unidade?.toLowerCase() === 'g')
-                              ? 'un'
-                              : (produtoSelecionado.unidade || 'un');
-
-                            if (produtoSelecionado.permiteFragmentacao || produtoSelecionado.vendaFracionada) {
-                              const fator = produtoSelecionado.fatorConversao || 1;
-                              const unidVenda = produtoSelecionado.unidadeVenda || 'un';
-                              return `Produto fracionável — 1 ${labelUnidade} = ${fator} ${unidVenda}`;
-                            }
-                            // Fallback legado de ração (baseado na regex do nome)
-                            const peso = extrairPesoDoNome(produtoSelecionado.nome);
-                            if (peso !== 1) {
-                              return `Produto vendido no peso (1 ${labelUnidade} = ${peso}kg)`;
-                            }
-                            return `Venda unitária rápida`;
+                            const labelUnidade = produtoSelecionado.unidade || 'un';
+                            const fator = produtoSelecionado.fatorConversao || 1;
+                            const unidVenda = produtoSelecionado.unidadeVenda || 'un';
+                            return `Produto fracionável — 1 ${labelUnidade} = ${fator} ${unidVenda}`;
                           })()}
                         </span>
                       </div>

@@ -109,14 +109,14 @@ export async function exemploEnviarPDFPorEmail(venda, cliente, emailDestinatario
   });
 
   const mailOptions = {
-    from: 'noreply@serradofelix.com.br',
+    from: 'noreply@zeutech.com.br',
     to: emailDestinatario,
     subject: `Comprovante de Venda #${venda.codigoVenda}`,
     html: `
       <p>Prezado cliente,</p>
       <p>Segue em anexo o comprovante de sua venda.</p>
       <p>Obrigado pela preferência!</p>
-      <p><strong>Serra do Félix Materiais de Construção</strong></p>
+      <p><strong>Zeu-Tech</strong></p>
     `,
     attachments: [
       {

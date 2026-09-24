@@ -11,10 +11,10 @@ import {
   getDocs,
   getDoc,
   writeBatch,
-  increment
+  increment,
+  limit
 } from 'firebase/firestore';
-import { useSystem } from '../contexts/SystemContext';
-import { dbDeposito } from '../services/firebase';
+import { db } from '../services/firebase';
 
 // Função auxiliar para converter string de data para Date no timezone local
 const stringParaDataLocal = (dataString) => {
@@ -34,8 +34,6 @@ export function useVendas() {
   const [error, setError] = useState(null);
   const cacheRef = useRef({ data: null, timestamp: null });
 
-  const { activeSystem } = useSystem();
-  const db = activeSystem?.db ?? dbDeposito;
   const col = (name) => collection(db, name);
   const colDoc = (name, id) => doc(db, name, id);
 
@@ -73,7 +71,7 @@ export function useVendas() {
       
       setLoading(true);
       setError(null);
-      const queryRef = query(col('vendas'), orderBy('dataVenda', 'desc'));
+      const queryRef = query(col('vendas'), orderBy('dataVenda', 'desc'), limit(100));
       const snapshot = await getDocs(queryRef);
       
       let vendasData = snapshot.docs.map(doc => ({

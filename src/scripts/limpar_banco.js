@@ -2,31 +2,19 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, deleteDoc, doc, writeBatch } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
 
-const firebaseConfigDeposito = {
-  apiKey: "AIzaSyCbH1440LSYJqZJSkkutT_o5q6u22lK2QY",
-  authDomain: "deposito-serra-do-felix.firebaseapp.com",
-  projectId: "deposito-serra-do-felix",
-  storageBucket: "deposito-serra-do-felix.firebasestorage.app",
-  messagingSenderId: "412648694325",
-  appId: "1:412648694325:web:a3749d6e8274e84047477c",
+// Credenciais lidas de variáveis de ambiente (configure no seu .env ou ambiente de execução)
+const firebaseConfig = {
+  apiKey:            process.env.FIREBASE_API_KEY            || "CONFIGURE_NO_ENV",
+  authDomain:        process.env.FIREBASE_AUTH_DOMAIN        || "CONFIGURE_NO_ENV",
+  projectId:         process.env.FIREBASE_PROJECT_ID         || "CONFIGURE_NO_ENV",
+  storageBucket:     process.env.FIREBASE_STORAGE_BUCKET     || "CONFIGURE_NO_ENV",
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "CONFIGURE_NO_ENV",
+  appId:             process.env.FIREBASE_APP_ID             || "CONFIGURE_NO_ENV",
 };
 
-const firebaseConfigRacao = {
-  apiKey: "AIzaSyDcfcxAZ21z2wy9FRDv2YyyZ71Gp53hag0",
-  authDomain: "casa-de-racao-2f709.firebaseapp.com",
-  projectId: "casa-de-racao-2f709",
-  storageBucket: "casa-de-racao-2f709.firebasestorage.app",
-  messagingSenderId: "791716625966",
-  appId: "1:791716625966:web:ac32b6f75d87df9a2a29bf"
-};
-
-const appDeposito = initializeApp(firebaseConfigDeposito, "deposito_temp");
-const appRacao = initializeApp(firebaseConfigRacao, "racao_temp");
-
-const dbDeposito = getFirestore(appDeposito);
-const dbRacao = getFirestore(appRacao);
-
-const authDeposito = getAuth(appDeposito);
+const appDb  = initializeApp(firebaseConfig, "db_temp");
+const dbDeposito  = getFirestore(appDb);
+const authDeposito = getAuth(appDb);
 
 async function limparColecoes(db, nomeDb) {
   console.log(`\n🧹 Iniciando limpeza do banco: ${nomeDb}...`);
@@ -76,13 +64,13 @@ async function executar() {
   let tempUser = null;
   try {
     console.log("🔑 Efetuando login no banco DEPÓSITO...");
-    const userCredential = await signInWithEmailAndPassword(authDeposito, "admin@serrafelix.com", "Admin@2026");
+    const userCredential = await signInWithEmailAndPassword(authDeposito, process.env.FIREBASE_ADMIN_EMAIL || "", process.env.FIREBASE_ADMIN_PASSWORD || "");
     tempUser = userCredential.user;
     console.log("✅ Login efetuado com sucesso!");
   } catch (authError) {
     console.log("⚠️ Não foi possível logar. Tentando criar um usuário temporário no DEPÓSITO...");
     try {
-      const userCredential = await createUserWithEmailAndPassword(authDeposito, "temp_admin@serrafelix.com", "TempAdmin@2026");
+      const userCredential = await createUserWithEmailAndPassword(authDeposito, process.env.FIREBASE_TEMP_EMAIL || "temp_admin@app.com", process.env.FIREBASE_TEMP_PASSWORD || "TempAdmin@2026");
       tempUser = userCredential.user;
       console.log("✅ Usuário temporário criado e logado com sucesso!");
     } catch (createError) {
@@ -92,7 +80,7 @@ async function executar() {
 
   await limparColecoes(dbDeposito, "DEPÓSITO");
 
-  if (tempUser && tempUser.email === "temp_admin@serrafelix.com") {
+  if (tempUser && tempUser.email === (process.env.FIREBASE_TEMP_EMAIL || "temp_admin@app.com")) {
     try {
       console.log("🗑️ Deletando usuário temporário no DEPÓSITO...");
       await deleteUser(tempUser);
@@ -102,8 +90,7 @@ async function executar() {
     }
   }
 
-  await limparColecoes(dbRacao, "CASA DE RAÇÃO");
-  console.log("\n🎉 Limpeza concluída para ambos os bancos!");
+  console.log("\n🎉 Limpeza concluída para o banco do Depósito!");
   process.exit(0);
 }
 

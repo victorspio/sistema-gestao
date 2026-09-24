@@ -11,7 +11,6 @@ import { Plus, Search, Edit, Trash2, FileText, CheckCircle, Clock, XCircle, Filt
 import { VendasSkeleton, LoadingSpinner, EmptyState } from '../../components/ui/LoadingComponents';
 import { formatCurrency, formatQuantity } from '../../utils/formatters';
 import { gerarComprovanteVenda, imprimirComprovanteVenda, EMPRESA_CONFIGS } from '../../utils/gerarComprovanteVenda';
-import { useSystem } from '../../contexts/SystemContext';
 
 export default function VendasPage() {
   const location = useLocation();
@@ -29,30 +28,22 @@ export default function VendasPage() {
   const { vendas, loading, error, listarVendas, adicionarVenda, atualizarVenda, deletarVenda } = useVendas();
   const { clientes, listarClientes, invalidarCache } = useClientes();
   const { produtos, listarProdutos } = useEstoque();
-  const { activeSystem } = useSystem();
-  const empresaConfig = activeSystem?.id === 'racao' ? EMPRESA_CONFIGS.racao : EMPRESA_CONFIGS.deposito;
+  const empresaConfig = EMPRESA_CONFIGS.app;
   
   // Debounce para busca
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   // Carregamento inicial otimizado
   useEffect(() => {
-    const carregarDadosIniciais = async () => {
-      try {
-        // Carregar em paralelo para melhor performance
-        await Promise.all([
-          listarClientes(),
-          listarVendas(),
-          listarProdutos()
-        ]);
-        setCarregamentoInicial(false);
-      } catch (error) {
-        console.error('Erro no carregamento inicial:', error);
-        setCarregamentoInicial(false);
-      }
-    };
-    carregarDadosIniciais();
-  }, []);
+    let mounted = true;
+    listarVendas().finally(() => {
+      if (mounted) setCarregamentoInicial(false);
+    });
+    // Carregar clientes e produtos em paralelo para selects e formulários
+    listarClientes().catch(err => console.error('Erro ao carregar clientes:', err));
+    listarProdutos().catch(err => console.error('Erro ao carregar produtos:', err));
+    return () => { mounted = false; };
+  }, [listarVendas, listarClientes, listarProdutos]);
 
   // Recarrega vendas quando filtros mudam (com debounce)
   useEffect(() => {

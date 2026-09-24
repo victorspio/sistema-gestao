@@ -32,14 +32,20 @@ export const vendaSchema = z.object({
 });
 
 export const clienteSchema = z.object({
+  tipoPessoa: z.enum(['PF', 'PJ']).default('PF').optional(),
   nome: z
     .string()
-    .min(3, 'Nome deve ter no mínimo 3 caracteres')
+    .min(3, 'Nome / Razão Social deve ter no mínimo 3 caracteres')
     .max(100, 'Nome deve ter no máximo 100 caracteres'),
+  razaoSocial: z
+    .string()
+    .max(100, 'Razão Social deve ter no máximo 100 caracteres')
+    .optional()
+    .or(z.literal('')),
   apelido: z
     .string()
-    .min(2, 'Apelido deve ter no mínimo 2 caracteres')
-    .max(50, 'Apelido deve ter no máximo 50 caracteres')
+    .min(2, 'Nome Fantasia / Apelido deve ter no mínimo 2 caracteres')
+    .max(50, 'Deve ter no máximo 50 caracteres')
     .optional()
     .or(z.literal('')),
   telefone: z
@@ -47,6 +53,13 @@ export const clienteSchema = z.object({
     .min(10, 'Telefone deve ter no mínimo 10 dígitos')
     .max(11, 'Telefone deve ter no máximo 11 dígitos')
     .regex(/^\d+$/, 'Telefone deve conter apenas números'),
+  whatsapp: z
+    .string()
+    .min(10, 'WhatsApp deve ter no mínimo 10 dígitos')
+    .max(11, 'WhatsApp deve ter no máximo 11 dígitos')
+    .regex(/^\d+$/, 'WhatsApp deve conter apenas números')
+    .optional()
+    .or(z.literal('')),
   cpf: z
     .string()
     .refine((val) => !val || val.length === 11 || val.length === 14, {
@@ -65,6 +78,16 @@ export const clienteSchema = z.object({
   endereco: z
     .string()
     .max(200, 'Endereço deve ter no máximo 200 caracteres')
+    .optional()
+    .or(z.literal('')),
+  complemento: z
+    .string()
+    .max(100, 'Complemento deve ter no máximo 100 caracteres')
+    .optional()
+    .or(z.literal('')),
+  bairro: z
+    .string()
+    .max(100, 'Bairro deve ter no máximo 100 caracteres')
     .optional()
     .or(z.literal('')),
   cidade: z

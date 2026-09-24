@@ -1,19 +1,25 @@
-/* Variáveis CSS para a identidade visual da Serra do Félix */
+/* Variáveis CSS para a identidade visual da Zeu-Tech */
 :root {
-  /* Cores principais da Serra do Félix */
-  --sf-orange-50: #fff7ed;
-  --sf-orange-100: #ffedd5;
-  --sf-orange-200: #fed7aa;
-  --sf-orange-300: #fdba74;
-  --sf-orange-400: #fb923c;
-  --sf-orange-500: #f97316;
-  --sf-orange-600: #ea580c;
-  --sf-orange-700: #c2410c;
-  --sf-orange-800: #9a3412;
-  --sf-orange-900: #7c2d12;
-  
-  /* Tons de cinza da Serra do Félix */
-  --sf-gray-50: #f8fafc;
+  /* Cores principais da Zeu-Tech — Ciano Elétrico */
+  --zt-cyan-50:  #e0f7ff;
+  --zt-cyan-100: #b3edff;
+  --zt-cyan-200: #80e2ff;
+  --zt-cyan-300: #4dd6ff;
+  --zt-cyan-400: #26ccff;
+  --zt-cyan-500: #00c8ff; /* Ciano principal */
+  --zt-cyan-600: #00a3d1;
+  --zt-cyan-700: #007fa4;
+  --zt-cyan-800: #005c77;
+  --zt-cyan-900: #003a4a;
+
+  /* Azuis de fundo / estrutura */
+  --zt-dark:      #060d30;
+  --zt-navy:      #0d1f4d;
+  --zt-blue:      #0057b8;
+  --zt-cyan-glow: #00e5ff;
+
+  /* Tons de cinza (mantidos) */
+  --sf-gray-50:  #f8fafc;
   --sf-gray-100: #f1f5f9;
   --sf-gray-200: #e2e8f0;
   --sf-gray-300: #cbd5e1;
@@ -23,21 +29,33 @@
   --sf-gray-700: #334155;
   --sf-gray-800: #1e293b;
   --sf-gray-900: #0f172a;
+
+  /* Aliases de compatibilidade (antigo orange → novo cyan) */
+  --sf-orange-50:  var(--zt-cyan-50);
+  --sf-orange-100: var(--zt-cyan-100);
+  --sf-orange-200: var(--zt-cyan-200);
+  --sf-orange-300: var(--zt-cyan-300);
+  --sf-orange-400: var(--zt-cyan-400);
+  --sf-orange-500: var(--zt-cyan-500);
+  --sf-orange-600: var(--zt-cyan-600);
+  --sf-orange-700: var(--zt-cyan-700);
+  --sf-orange-800: var(--zt-cyan-800);
+  --sf-orange-900: var(--zt-cyan-900);
 }
 
-/* Classes utilitárias personalizadas */
+/* Classes utilitárias */
 .sf-primary {
-  background-color: var(--sf-orange-500);
+  background-color: var(--zt-cyan-500);
   color: white;
 }
 
 .sf-primary:hover {
-  background-color: var(--sf-orange-600);
+  background-color: var(--zt-cyan-600);
 }
 
 .sf-primary-light {
-  background-color: var(--sf-orange-50);
-  color: var(--sf-orange-700);
+  background-color: var(--zt-cyan-50);
+  color: var(--zt-cyan-700);
 }
 
 .sf-secondary {
@@ -46,16 +64,16 @@
 }
 
 .sf-text-primary {
-  color: var(--sf-orange-500);
+  color: var(--zt-cyan-500);
 }
 
 .sf-text-secondary {
   color: var(--sf-gray-600);
 }
 
-/* Estilo para o logo temporário */
+/* Gradiente da identidade Zeu-Tech */
 .sf-logo-gradient {
-  background: linear-gradient(135deg, var(--sf-orange-500) 0%, var(--sf-orange-600) 100%);
+  background: linear-gradient(135deg, var(--zt-cyan-500) 0%, var(--zt-blue) 100%);
 }
 
 /* Animações suaves */
@@ -70,4 +88,9 @@
 
 .sf-shadow-lg {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Glow Zeu-Tech */
+.zt-glow {
+  box-shadow: 0 0 16px rgba(0, 200, 255, 0.4), 0 0 32px rgba(0, 200, 255, 0.15);
 }

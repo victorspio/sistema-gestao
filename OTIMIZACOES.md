@@ -106,4 +106,4 @@ E no `index.html`, adicione no `<head>`:
 
 ---
 
-**Criado para Serra do Félix - Material de Construção** 🏗️
+**Criado para Zeu-Tech** 🏗️

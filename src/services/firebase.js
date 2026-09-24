@@ -1,45 +1,60 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp, getApps } from "firebase/app";
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
-// ─── Depósito Serra Félix ─────────────────────────────────────────────────────
-const firebaseConfigDeposito = {
-  apiKey: "AIzaSyCbH1440LSYJqZJSkkutT_o5q6u22lK2QY",
-  authDomain: "deposito-serra-do-felix.firebaseapp.com",
-  projectId: "deposito-serra-do-felix",
-  storageBucket: "deposito-serra-do-felix.firebasestorage.app",
-  messagingSenderId: "412648694325",
-  appId: "1:412648694325:web:a3749d6e8274e84047477c",
-  measurementId: "G-CY9DJBZG00"
+// ─── Verificação de configuração ─────────────────────────────────────────────
+// Retorna true se o .env estiver preenchido com a chave mínima (apiKey)
+export const isFirebaseConfigured = Boolean(
+  import.meta.env.VITE_FIREBASE_API_KEY &&
+  import.meta.env.VITE_FIREBASE_PROJECT_ID
+);
+
+// ─── Configuração do Firebase ─────────────────────────────────────────────────
+// Todas as credenciais vêm exclusivamente do arquivo .env
+// Preencha o .env antes de rodar a aplicação
+const firebaseConfig = {
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            ?? "",
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN        ?? "",
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID         ?? "",
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET     ?? "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ?? "",
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID             ?? "",
+  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID     ?? "",
 };
 
-// ─── Casa de Ração ────────────────────────────────────────────────────────────
-const firebaseConfigRacao = {
-  apiKey: "AIzaSyDcfcxAZ21z2wy9FRDv2YyyZ71Gp53hag0",
-  authDomain: "casa-de-racao-2f709.firebaseapp.com",
-  projectId: "casa-de-racao-2f709",
-  storageBucket: "casa-de-racao-2f709.firebasestorage.app",
-  messagingSenderId: "791716625966",
-  appId: "1:791716625966:web:ac32b6f75d87df9a2a29bf"
-};
+// ─── Inicialização (só executa se estiver configurado) ───────────────────────
+let appInstance = null;
+let firestoreDb  = null;
+let authInstance = null;
+let storageInstance = null;
 
-// ─── Inicialização dos apps ───────────────────────────────────────────────────
-const appDeposito = getApps().find(a => a.name === '[DEFAULT]')
-  ?? initializeApp(firebaseConfigDeposito);
+if (isFirebaseConfigured) {
+  appInstance = getApps().find(a => a.name === "[DEFAULT]")
+    ?? initializeApp(firebaseConfig);
 
-const appRacao = getApps().find(a => a.name === 'racao')
-  ?? initializeApp(firebaseConfigRacao, 'racao');
+  // Firestore com cache local persistente (IndexedDB) para melhor performance
+  try {
+    firestoreDb = initializeFirestore(appInstance, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    });
+  } catch {
+    firestoreDb = getFirestore(appInstance);
+  }
+
+  authInstance    = getAuth(appInstance);
+  storageInstance = getStorage(appInstance);
+}
 
 // ─── Exports ──────────────────────────────────────────────────────────────────
-// Auth fica no projeto principal (Depósito) — login compartilhado
-export const auth = getAuth(appDeposito);
-export const storage = getStorage(appDeposito);
-
-// Um Firestore por sistema
-export const dbDeposito = getFirestore(appDeposito);
-export const dbRacao    = getFirestore(appRacao);
-
-// Compatibilidade retroativa: exporta `db` como alias do Depósito
-// (usado em arquivos que ainda não foram migrados para useSystem)
-export const db = dbDeposito;
+export const app     = appInstance;
+export const auth    = authInstance;
+export const storage = storageInstance;
+export const db      = firestoreDb;

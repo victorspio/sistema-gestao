@@ -5,7 +5,7 @@
  * Script de migration AGRESSIVO para o novo modelo de unidades de estoque.
  * 
  * O que faz:
- * 1. Lê todos os produtos dos dois Firestores (deposito + racao)
+ * 1. Lê todos os produtos do Firestore (deposito)
  * 2. Adiciona os novos campos com defaults seguros:
  *    - permiteFragmentacao (herda de vendaFracionada)
  *    - incrementoMinimoVenda (0 = sem restrição)
@@ -34,8 +34,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // ─── Configuração ─────────────────────────────────────────────────────────────
 
 const PROJETOS = [
-  { nome: 'deposito', projectId: 'deposito-serra-do-felix' },
-  { nome: 'racao',    projectId: 'casa-de-racao-2f709'     },
+  { nome: 'app', projectId: process.env.FIREBASE_PROJECT_ID || 'SEU_PROJECT_ID_AQUI' },
 ];
 
 // ─── Regex de peso (mesma do extrairPesoDoNome) ───────────────────────────────

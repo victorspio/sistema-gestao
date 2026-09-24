@@ -1,22 +1,32 @@
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { clienteSchema } from '../../utils/schemas';
 
 export default function ClienteForm({ onSubmit, initialData, isEditing }) {
+  const [tipoPessoa, setTipoPessoa] = useState(initialData?.tipoPessoa || 'PF');
+
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
     reset
   } = useForm({
     resolver: zodResolver(clienteSchema),
     defaultValues: initialData || {
+      tipoPessoa: 'PF',
       nome: '',
+      razaoSocial: '',
       apelido: '',
       telefone: '',
+      whatsapp: '',
       cpf: '',
       email: '',
       endereco: '',
+      complemento: '',
+      bairro: '',
       cidade: '',
       estado: '',
       cep: '',
@@ -24,9 +34,20 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
     }
   });
 
+  useEffect(() => {
+    if (initialData?.tipoPessoa) {
+      setTipoPessoa(initialData.tipoPessoa);
+    }
+  }, [initialData]);
+
+  const handleTipoChange = (tipo) => {
+    setTipoPessoa(tipo);
+    setValue('tipoPessoa', tipo);
+  };
+
   const handleFormSubmit = async (data) => {
     try {
-      await onSubmit(data);
+      await onSubmit({ ...data, tipoPessoa });
       if (!isEditing) {
         reset();
       }
@@ -37,15 +58,42 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      {/* Seletor Tipo de Pessoa */}
+      <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-800 p-2 rounded-xl w-fit">
+        <button
+          type="button"
+          onClick={() => handleTipoChange('PF')}
+          className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+            tipoPessoa === 'PF'
+              ? 'bg-orange-500 text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          Pessoa Física (PF)
+        </button>
+        <button
+          type="button"
+          onClick={() => handleTipoChange('PJ')}
+          className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+            tipoPessoa === 'PJ'
+              ? 'bg-orange-500 text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          Pessoa Jurídica (PJ)
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Nome */}
+        {/* Nome / Razão Social */}
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            Nome *
+            {tipoPessoa === 'PJ' ? 'Razão Social *' : 'Nome Completo *'}
           </label>
           <input
             type="text"
             className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            placeholder={tipoPessoa === 'PJ' ? 'Ex: Tech Segurança Ltda' : 'Ex: João da Silva'}
             {...register('nome')}
           />
           {errors.nome && (
@@ -53,80 +101,103 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           )}
         </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-          Apelido
-        </label>
-        <input
-          type="text"
-          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-          {...register('apelido')}
-        />
-        {errors.apelido && (
-          <p className="mt-1 text-sm text-red-600">{errors.apelido.message}</p>
-        )}
+        {/* Nome Fantasia / Apelido */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            {tipoPessoa === 'PJ' ? 'Nome Fantasia' : 'Apelido / Como prefere ser chamado'}
+          </label>
+          <input
+            type="text"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            placeholder={tipoPessoa === 'PJ' ? 'Ex: Tech Seg' : 'Ex: João'}
+            {...register('apelido')}
+          />
+          {errors.apelido && (
+            <p className="mt-1 text-sm text-red-600">{errors.apelido.message}</p>
+          )}
+        </div>
+
+        {/* CPF / CNPJ */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            {tipoPessoa === 'PJ' ? 'CNPJ' : 'CPF'}
+          </label>
+          <input
+            type="text"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            placeholder={tipoPessoa === 'PJ' ? '14 dígitos (apenas números)' : '11 dígitos (apenas números)'}
+            maxLength={tipoPessoa === 'PJ' ? 14 : 11}
+            {...register('cpf')}
+          />
+          {errors.cpf && (
+            <p className="mt-1 text-sm text-red-600">{errors.cpf.message}</p>
+          )}
+        </div>
+
+        {/* Telefone Principal */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Telefone Principal *
+          </label>
+          <input
+            type="tel"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            placeholder="DDD + Número (apenas números)"
+            {...register('telefone')}
+          />
+          {errors.telefone && (
+            <p className="mt-1 text-sm text-red-600">{errors.telefone.message}</p>
+          )}
+        </div>
+
+        {/* WhatsApp */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            WhatsApp
+          </label>
+          <input
+            type="tel"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            placeholder="DDD + Número (apenas números)"
+            {...register('whatsapp')}
+          />
+          {errors.whatsapp && (
+            <p className="mt-1 text-sm text-red-600">{errors.whatsapp.message}</p>
+          )}
+        </div>
+
+        {/* E-mail */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            E-mail
+          </label>
+          <input
+            type="email"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+            placeholder="exemplo@email.com"
+            {...register('email')}
+          />
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+          )}
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-          Telefone *
-        </label>
-        <input
-          type="tel"
-          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-          {...register('telefone')}
-        />
-        {errors.telefone && (
-          <p className="mt-1 text-sm text-red-600">{errors.telefone.message}</p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-          CPF/CNPJ
-        </label>
-        <input
-          type="text"
-          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-          placeholder="CPF: 11 dígitos ou CNPJ: 14 dígitos (apenas números)"
-          maxLength="14"
-          {...register('cpf')}
-        />
-        {errors.cpf && (
-          <p className="mt-1 text-sm text-red-600">{errors.cpf.message}</p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-          E-mail
-        </label>
-        <input
-          type="email"
-          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-          {...register('email')}
-        />
-        {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-        )}
-      </div>
-
-      </div>
-
-      {/* Seção de Endereço */}
+      {/* Seção de Endereço / Local de Instalação */}
       <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-4">Endereço</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
+        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-4">
+          Endereço / Local de Atendimento
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Endereço */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Endereço Completo
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Logradouro e Número
             </label>
             <input
               type="text"
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-              placeholder="Rua, número, bairro"
+              placeholder="Rua, Avenida, Número"
               {...register('endereco')}
             />
             {errors.endereco && (
@@ -134,14 +205,47 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
             )}
           </div>
 
+          {/* Complemento */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Complemento
+            </label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              placeholder="Apto, Sala, Bloco, Galpão"
+              {...register('complemento')}
+            />
+            {errors.complemento && (
+              <p className="mt-1 text-sm text-red-600">{errors.complemento.message}</p>
+            )}
+          </div>
+
+          {/* Bairro */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Bairro
+            </label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              placeholder="Nome do bairro"
+              {...register('bairro')}
+            />
+            {errors.bairro && (
+              <p className="mt-1 text-sm text-red-600">{errors.bairro.message}</p>
+            )}
+          </div>
+
           {/* Cidade */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Cidade
             </label>
             <input
               type="text"
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+              placeholder="Cidade"
               {...register('cidade')}
             />
             {errors.cidade && (
@@ -151,7 +255,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
 
           {/* Estado */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Estado
             </label>
             <select
@@ -194,7 +298,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
 
           {/* CEP */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               CEP
             </label>
             <input
@@ -208,17 +312,17 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
               <p className="mt-1 text-sm text-red-600">{errors.cep.message}</p>
             )}
           </div>
-
         </div>
       </div>
 
       {/* Observações */}
       <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-          Observações
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          Observações / Informações Técnicas do Cliente
         </label>
         <textarea
           className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 min-h-[100px]"
+          placeholder="Ex: Horário de acesso para manutenção, portão eletrônico, síndico/responsável local..."
           {...register('observacoes')}
         />
         {errors.observacoes && (
@@ -231,7 +335,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           type="button"
           onClick={() => {
             reset();
-            onSubmit(null); // Isso fechará o formulário
+            onSubmit(null);
           }}
           className="px-6 py-3 text-slate-600 dark:text-white bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl font-medium transition-all duration-200"
         >
@@ -240,9 +344,9 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
         >
-          {isSubmitting ? 'Salvando...' : isEditing ? 'Atualizar' : 'Cadastrar'}
+          {isSubmitting ? 'Salvando...' : isEditing ? 'Atualizar Cliente' : 'Cadastrar Cliente'}
         </button>
       </div>
     </form>

@@ -1,19 +1,16 @@
 import React from 'react';
-import { useSystem } from '../../contexts/SystemContext';
 
 const Logo = ({ className = "", size = "md" }) => {
   const sizes = {
-    sm: "h-12 w-auto",
-    md: "h-44 w-auto",
-    lg: "h-40 w-auto",
-    large: "h-40 w-auto",
-    xl: "h-48 w-auto"
+    sm: "h-10 w-auto",
+    md: "<h-28></h-28> w-auto",
+    lg: "h-24 w-auto",
+    large: "h-24 w-auto",
+    xl: "h-28 w-auto"
   };
 
-  const { activeSystem } = useSystem();
-
-  const src = activeSystem?.logo ?? '/logo-serra-felix.png';
-  const alt = activeSystem?.logoAlt ?? 'Serra do Félix - Material de Construção';
+  const src = '/logo.png';
+  const alt = 'Zeu-Tech';
 
   return (
     <div className={`flex items-center ${className}`}>

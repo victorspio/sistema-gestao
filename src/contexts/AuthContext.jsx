@@ -1,26 +1,30 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  signInWithEmailAndPassword, 
-  signOut, 
+import {
+  signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
   setPersistence,
-  browserSessionPersistence
+  browserLocalPersistence
 } from 'firebase/auth';
-import { auth } from '../services/firebase';
-import { useSystem } from './SystemContext';
+import { auth, isFirebaseConfigured } from '../services/firebase';
 
 const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const { clearSystem } = useSystem();
+  // Se Firebase não estiver configurado, não fica em "loading" infinito
+  const [loading, setLoading] = useState(isFirebaseConfigured);
 
   useEffect(() => {
-    // Configurar persistência de sessão (desloga ao fechar o navegador)
-    setPersistence(auth, browserSessionPersistence).catch(console.error);
+    if (!isFirebaseConfigured || !auth) {
+      setLoading(false);
+      return;
+    }
 
-    // Listener para mudanças de autenticação
+    // Configura persistência local (mantém logado ao fechar o navegador)
+    setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+    // Listener para mudanças de estado de autenticação
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -30,6 +34,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
+    if (!isFirebaseConfigured || !auth) {
+      throw new Error('Firebase não configurado. Preencha o arquivo .env.');
+    }
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       return userCredential.user;
@@ -40,8 +47,8 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    if (!isFirebaseConfigured || !auth) return;
     try {
-      clearSystem();
       await signOut(auth);
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
@@ -53,7 +60,8 @@ export function AuthProvider({ children }) {
     user,
     login,
     logout,
-    loading
+    loading,
+    isConfigured: isFirebaseConfigured,
   };
 
   return (

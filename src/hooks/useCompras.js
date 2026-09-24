@@ -11,10 +11,10 @@ import {
   getDoc,
   writeBatch,
   where,
-  increment
+  increment,
+  limit
 } from 'firebase/firestore';
-import { useSystem } from '../contexts/SystemContext';
-import { dbDeposito } from '../services/firebase';
+import { db } from '../services/firebase';
 
 // Função auxiliar para converter string de data para Date no timezone local
 const stringParaDataLocal = (dataString) => {
@@ -34,8 +34,6 @@ export function useCompras() {
   const [error, setError] = useState(null);
   const cacheRef = useRef({ data: null, timestamp: null });
 
-  const { activeSystem } = useSystem();
-  const db = activeSystem?.db ?? dbDeposito;
   const col = (name) => collection(db, name);
   const colDoc = (name, id) => doc(db, name, id);
 
@@ -64,7 +62,7 @@ export function useCompras() {
       
       setLoading(true);
       setError(null);
-      const queryRef = query(col('compras'), orderBy('dataCompra', 'desc'));
+      const queryRef = query(col('compras'), orderBy('dataCompra', 'desc'), limit(100));
       const snapshot = await getDocs(queryRef);
 
       let comprasData = snapshot.docs.map(doc => ({

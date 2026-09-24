@@ -198,7 +198,7 @@ background: #FF6B00;   /* Fundo */
 ### Mudar Dados da Empresa
 Editar no template:
 ```html
-<div class="company-name">SERRA DO FÉLIX...</div>
+<div class="company-name">ZEU-TECH...</div>
 ```
 
 ## 📱 Responsividade

@@ -10,10 +10,10 @@ import {
   orderBy, 
   getDocs,
   serverTimestamp,
-  writeBatch
+  writeBatch,
+  limit
 } from 'firebase/firestore';
-import { useSystem } from '../contexts/SystemContext';
-import { dbDeposito } from '../services/firebase';
+import { db } from '../services/firebase';
 
 // Helper function to calculate Levenshtein distance between two strings
 function getLevenshteinDistance(a, b) {
@@ -51,8 +51,6 @@ export function useEstoque() {
   const [error, setError] = useState(null);
   const cacheRef = useRef({ data: null, timestamp: null });
 
-  const { activeSystem } = useSystem();
-  const db = activeSystem?.db ?? dbDeposito;
   const col = (name) => collection(db, name);
   const colDoc = (name, id) => doc(db, name, id);
 
@@ -73,7 +71,7 @@ export function useEstoque() {
       setLoading(true);
       setError(null);
 
-      let queryRef = query(col('produtos'), orderBy('nome'));
+      let queryRef = query(col('produtos'), orderBy('nome'), limit(300));
       if (filtros.categoria) queryRef = query(queryRef, where('categoriaId', '==', filtros.categoria));
       if (filtros.estoqueMinimo) queryRef = query(queryRef, where('quantidade', '<=', filtros.estoqueMinimo));
 
@@ -85,6 +83,9 @@ export function useEstoque() {
         produtosData = produtosData.filter(p => 
           p.nome?.toLowerCase().includes(termo) ||
           p.codigo?.toLowerCase().includes(termo) ||
+          p.marca?.toLowerCase().includes(termo) ||
+          p.modelo?.toLowerCase().includes(termo) ||
+          p.sku?.toLowerCase().includes(termo) ||
           p.descricao?.toLowerCase().includes(termo)
         );
       }
@@ -189,7 +190,7 @@ export function useEstoque() {
         const compraRef = doc(col('compras'));
         const codigoCompra = gerarCodigoCompra();
         batch.set(compraRef, {
-          codigoCompra, fornecedor: dados.fornecedor?.trim() || 'Cadastro Inicial',
+          codigoCompra, fornecedor: dados.fornecedor?.trim() || dados.nome?.trim() || 'Produto sem nome',
           dataCompra: new Date(), valorTotal,
           observacoes: `Compra automática - Cadastro inicial do produto: ${dados.nome?.trim() || ''}`,
           produtoId: produtoRef.id, nomeProduto: dados.nome?.trim() || '',
@@ -217,8 +218,8 @@ export function useEstoque() {
     } catch (err) {
       if (!err.message?.includes('Já existe')) {
         console.error('Erro ao adicionar produto:', err);
+        setError(err.message);
       }
-      setError(err.message);
       throw err;
     } finally {
       setLoading(false);
@@ -303,8 +304,8 @@ export function useEstoque() {
     } catch (err) {
       if (!err.message?.includes('Já existe')) {
         console.error('Erro ao atualizar produto:', err);
+        setError(err.message);
       }
-      setError(err.message);
       throw err;
     } finally {
       setLoading(false);

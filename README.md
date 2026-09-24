@@ -1,6 +1,6 @@
-# Depósito Serra do Félix
+# Zeu-Tech
 
-Sistema web de controle financeiro e de vendas desenvolvido para o Depósito Serra do Félix.
+Sistema web de controle financeiro e de vendas desenvolvido para a Zeu-Tech.
 
 ## 🚀 Tecnologias
 
@@ -25,7 +25,7 @@ Sistema web de controle financeiro e de vendas desenvolvido para o Depósito Ser
 1. Clone o repositório:
 \`\`\`powershell
 git clone [URL_DO_REPOSITÓRIO]
-cd deposito-serra-felix
+cd zeu-tech
 \`\`\`
 
 2. Instale as dependências:
@@ -35,9 +35,9 @@ npm install
 yarn
 \`\`\`
 
-3. Configure o Firebase:
-   - Copie o arquivo `src/services/firebase.js`
-   - Substitua as credenciais com as suas do console do Firebase
+3. Configure as variáveis de ambiente:
+   - Copie o arquivo `.env.example` para `.env`
+   - Preencha com as credenciais do seu backend/Firebase conforme necessário
 
 4. Inicie o servidor de desenvolvimento:
 \`\`\`powershell

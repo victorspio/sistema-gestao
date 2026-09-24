@@ -285,7 +285,7 @@ export async function gerarPDFComprovanteVenda(venda, cliente = {}) {
 
 ## 📝 Notas Importantes
 
-1. **Empresa**: Os dados da empresa são fixos no template (Serra do Félix)
+1. **Empresa**: Os dados da empresa são fixos no template (Zeu-Tech)
 2. **Sem Valor Fiscal**: O rodapé indica que não é documento fiscal
 3. **Crédito**: Aparece "Sistema Gestão Fácil" no rodapé
 4. **Impressão**: Otimizado para impressoras A4

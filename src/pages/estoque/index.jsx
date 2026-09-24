@@ -9,7 +9,7 @@ import { formatCurrency, formatQuantity } from '../../utils/formatters';
 import ImportarNFe from '../../components/ui/ImportarNFe';
 
 export default function Estoque() {
-  const { produtos, carregando, erro, adicionarProduto, atualizarProduto, deletarProduto, listarProdutos } = useEstoque();
+  const { produtos, loading: carregando, error: erro, adicionarProduto, atualizarProduto, deletarProduto, listarProdutos } = useEstoque();
   
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [produtoParaEditar, setProdutoParaEditar] = useState(null);
@@ -334,6 +334,11 @@ export default function Estoque() {
                         <td className="px-6 py-4">
                           <div>
                             <p className="font-medium text-slate-900 dark:text-slate-100">{produto.nome}</p>
+                            {(produto.marca || produto.modelo) && (
+                              <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                                {[produto.marca, produto.modelo].filter(Boolean).join(' • ')}
+                              </p>
+                            )}
                             {produto.descricao && (
                               <p className="text-sm text-slate-500 dark:text-white truncate max-w-xs">{produto.descricao}</p>
                             )}

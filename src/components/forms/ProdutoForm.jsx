@@ -1,34 +1,61 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useSystem } from '../../contexts/SystemContext';
+import { ImagePlus, X } from 'lucide-react';
 
-// Categorias por sistema
-const CATEGORIAS = {
-  deposito: [
-    'Cimento', 'Areia', 'Brita', 'Tijolo', 'Bloco', 'Ferro',
-    'Madeira', 'Tinta', 'Ferramentas', 'Hidráulica', 'Elétrica',
-    'Telha', 'Laje', 'Argamassa', 'Cal', 'Impermeabilizante',
-    'Parafusos e Pregos', 'Tubos e Conexões', 'Piso e Revestimento',
-    'Porta e Janela', 'Gesso', 'Drywall',
-  ],
-  racao: [
-    'Ração para Cão', 'Ração para Gato', 'Ração para Ave',
-    'Ração para Bovino', 'Ração para Suíno', 'Ração para Equino',
-    'Ração para Ovino / Caprino', 'Ração para Coelho',
-    'Suplemento Animal', 'Sal Mineral', 'Premix',
-    'Vacina e Medicamento', 'Antiparasitário', 'Vitaminas',
-    'Ração Artesanal / Natural', 'Petisco', 'Areia Higiênica',
-    'Cama para Animal', 'Acessório Pet', 'Inseto / Grilo',
-    'Sementes e Grãos', 'Adubos e Fertilizantes',
-    'Defensivo Agrícola', 'Equipamento Agropecuário',
-  ],
-};
+// Redimensiona e comprime imagem para base64 (JPEG, máx 400px, 80% qualidade)
+function comprimirImagem(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 400;
+        let w = img.width;
+        let h = img.height;
+        if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+        else { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.80));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Categorias de Equipamentos e Produtos de Segurança Eletrônica
+export const CATEGORIAS = [
+  'Câmeras IP / Wi-Fi',
+  'Câmeras HD / Analógicas',
+  'Gravadores (DVR / NVR)',
+  'Armazenamento (HDs)',
+  'Alarmes e Centrais',
+  'Sensores (Presença, Barreira, Abertura)',
+  'Centrais de Choque e Cerca Elétrica',
+  'Controle de Acesso e Biometria',
+  'Fechaduras Digitais e Eletroímãs',
+  'Interfonia e Vídeo Porteiro',
+  'Fontes de Alimentação',
+  'Nobreaks e Baterias',
+  'Cabos e Fios',
+  'Conectores e Adaptadores',
+  'Racks e Gabinetes',
+  'Redes e Switches (PoE)',
+  'Acessórios e Fixação'
+];
 
 const produtoSchema = z.object({
   codigo: z.string().optional(),
+  sku: z.string().optional(),
   nome: z.string().min(1, 'Nome é obrigatório'),
+  marca: z.string().optional(),
+  modelo: z.string().optional(),
   descricao: z.string().optional(),
   categoria: z.string().min(1, 'Categoria é obrigatória'),
   unidade: z.string().min(1, 'Unidade é obrigatória'),
@@ -48,22 +75,37 @@ const produtoSchema = z.object({
 });
 
 export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
-  const { activeSystem } = useSystem();
-  const isRacao = activeSystem?.id === 'racao';
-  const categoriasList = isRacao ? CATEGORIAS.racao : CATEGORIAS.deposito;
-  const categoriasPlaceholder = isRacao
-    ? 'Ex: Ração para Cão, Sal Mineral...'
-    : 'Ex: Cimento, Areia, Tijolo...';
+  // ── Imagem (gerenciada fora do react-hook-form) ──────────────────────────────
+  const [imagemBase64, setImagemBase64] = useState(initialData?.imagemBase64 || null);
+  const fileInputRef = useRef(null);
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const base64 = await comprimirImagem(file);
+    setImagemBase64(base64);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleRemoverImagem = () => {
+    setImagemBase64(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const categoriasPlaceholder = 'Ex: Câmeras IP, DVR, Alarmes, Sensores...';
   const formattedInitialData = useMemo(() => {
     if (!initialData) return null;
     return {
       codigo:           initialData.codigo    || '',
+      sku:              initialData.sku       || '',
       nome:             initialData.nome      || '',
+      marca:            initialData.marca     || '',
+      modelo:           initialData.modelo    || '',
       descricao:        initialData.descricao || '',
       categoria:        initialData.categoria || '',
       unidade:          initialData.unidade   || 'un',
-      quantidade: (typeof initialData.quantidade === 'number' && initialData.quantidade % 1 !== 0) 
-        ? parseFloat(initialData.quantidade.toFixed(3)) 
+      quantidade: (typeof initialData.quantidade === 'number' && initialData.quantidade % 1 !== 0)
+        ? parseFloat(initialData.quantidade.toFixed(3))
         : (initialData.quantidade !== undefined ? initialData.quantidade : ''),
       estoqueMinimo:        initialData.estoqueMinimo    !== undefined ? initialData.estoqueMinimo : '',
       precoCompra:          initialData.precoCompra      || '',
@@ -89,7 +131,10 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
     resolver: zodResolver(produtoSchema),
     defaultValues: formattedInitialData || {
       codigo:               '',
+      sku:                  '',
       nome:                 '',
+      marca:                '',
+      modelo:               '',
       descricao:            '',
       categoria:            '',
       unidade:              'un',
@@ -127,6 +172,8 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
         unidadeVenda:        fracionavel ? (data.unidadeVenda || data.unidade || 'un') : (data.unidade || 'un'),
         precoVendaUnitario:  fracionavel ? (Number(data.precoVendaUnitario) || 0) : 0,
         incrementoMinimoVenda: Number(data.incrementoMinimoVenda) || 0,
+        // Imagem base64 gerenciada fora do react-hook-form
+        imagemBase64: imagemBase64 || null,
       };
       await onSubmit(dadosProcessados);
     } catch (error) {
@@ -138,31 +185,58 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
-      {/* Informações Básicas */}
+      {/* Nome */}
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-          Nome *
+          Nome do Equipamento / Produto *
         </label>
         <input
           type="text"
           {...register('nome')}
           className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
-          placeholder="Nome do produto"
+          placeholder="Ex: Câmera Dome Full HD 1080p IR 20m"
         />
         {errors.nome && (
           <p className="mt-1 text-sm text-red-500">{errors.nome.message}</p>
         )}
       </div>
 
+      {/* Marca e Modelo / SKU */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Marca / Fabricante
+          </label>
+          <input
+            type="text"
+            {...register('marca')}
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            placeholder="Ex: Intelbras, Hikvision, JFL, PPA..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Modelo / SKU
+          </label>
+          <input
+            type="text"
+            {...register('modelo')}
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            placeholder="Ex: VHD 1120 D G6 / SKU-8841"
+          />
+        </div>
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-          Descrição
+          Descrição / Especificações Técnicas
         </label>
         <textarea
           {...register('descricao')}
           rows={3}
           className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
-          placeholder="Descrição do produto"
+          placeholder="Ex: Lente 2.8mm, proteção IP66 contra chuva, alcance 20 metros..."
         />
       </div>
 
@@ -181,7 +255,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
             autoComplete="off"
           />
           <datalist id="categorias">
-            {categoriasList.map((cat) => (
+            {CATEGORIAS.map((cat) => (
               <option key={cat} value={cat} />
             ))}
           </datalist>
@@ -192,26 +266,20 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
 
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            Unidade de Estoque *
+            Unidade de Medida *
           </label>
           <select
             {...register('unidade')}
             className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
           >
             <option value="un">Unidade (un)</option>
-            <option value="kg">Quilograma (kg)</option>
-            <option value="g">Grama (g)</option>
-            <option value="l">Litro (l)</option>
-            <option value="ml">Mililitro (ml)</option>
             <option value="m">Metro (m)</option>
-            <option value="m2">Metro² (m²)</option>
-            <option value="m3">Metro³ (m³)</option>
+            <option value="rl">Rolo (rl)</option>
+            <option value="kit">Kit (kit)</option>
+            <option value="pc">Peça (pc)</option>
             <option value="cx">Caixa (cx)</option>
             <option value="pct">Pacote (pct)</option>
-            <option value="sc">Saco (sc)</option>
-            <option value="fd">Fardo (fd)</option>
-            <option value="rl">Rolo (rl)</option>
-            <option value="pc">Peça (pc)</option>
+            <option value="par">Par (par)</option>
           </select>
           {errors.unidade && (
             <p className="mt-1 text-sm text-red-500">{errors.unidade.message}</p>
@@ -418,6 +486,63 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
             placeholder="Ex: Prateleira A3, Galpão 2..."
           />
         </div>
+      </div>
+
+      {/* ── Imagem do Produto ─────────────────────────────────────────────────── */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          Imagem do Produto
+          <span className="ml-2 text-xs font-normal text-slate-400">(aparece no PDF do orçamento)</span>
+        </label>
+
+        {imagemBase64 ? (
+          <div className="flex items-start gap-4">
+            <div className="w-32 h-24 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 flex-shrink-0">
+              <img src={imagemBase64} alt="Preview do produto" className="w-full h-full object-contain" />
+            </div>
+            <div className="flex flex-col gap-2 justify-center">
+              <p className="text-xs text-slate-500 dark:text-slate-400">Imagem selecionada e comprimida.</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                >
+                  <ImagePlus size={13} />
+                  Trocar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoverImagem}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                >
+                  <X size={13} />
+                  Remover
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-lg hover:border-orange-400 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all group cursor-pointer"
+          >
+            <ImagePlus size={22} className="text-slate-400 group-hover:text-orange-500 transition-colors mb-1" />
+            <p className="text-xs text-slate-500 dark:text-slate-400 group-hover:text-orange-500 transition-colors">
+              Clique para selecionar uma imagem
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5">JPG, PNG, WEBP — será comprimida automaticamente</p>
+          </button>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="hidden"
+        />
       </div>
 
       {/* Botões */}
