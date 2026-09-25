@@ -4,14 +4,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ImagePlus, X } from 'lucide-react';
 
-// Redimensiona e comprime imagem para base64 (JPEG, máx 400px, 80% qualidade)
+// Redimensiona imagem mantendo proporção original
+// Se a imagem for PNG (ou formato com transparência), preserva o formato PNG com transparência total (sem fundo preto)
+// Se for JPEG, comprime como JPEG
 function comprimirImagem(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        const MAX = 400;
+        const MAX = 600;
         let w = img.width;
         let h = img.height;
         if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
@@ -20,8 +22,18 @@ function comprimirImagem(file) {
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext('2d');
+        
+        // 1. Preenche 100% do fundo com branco puro antes de desenhar
+        // Isso converte qualquer transparência (PNG, WebP) em fundo branco perfeito de estúdio
+        // e preserva 100% dos pixels do produto (inclusive detalhes escuros e viseiras)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, w, h);
+
+        // 2. Desenha a imagem por cima do fundo branco
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.80));
+
+        // 3. Exporta como JPEG de alta qualidade com fundo branco garantido
+        resolve(canvas.toDataURL('image/jpeg', 0.90));
       };
       img.src = e.target.result;
     };

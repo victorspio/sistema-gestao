@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatCurrency } from './formatters';
-import { precarregarImagensPDF } from './pdfImageHelper';
+import { precarregarImagensPDF, prepararImagemProdutoParaPDF } from './pdfImageHelper';
 
 export async function gerarPdfOrcamento(orcamento, dadosEmpresa = {}) {
   const doc = new jsPDF({
@@ -14,8 +14,17 @@ export async function gerarPdfOrcamento(orcamento, dadosEmpresa = {}) {
   const pageHeight = doc.internal.pageSize.height;
   const margin = 14;
 
-  // Pré-carrega imagens do cabeçalho
-  const { mascote, logo } = await precarregarImagensPDF();
+  // Pré-carrega imagens do cabeçalho e pré-processa produtos (proporção sem achatamento + fundo branco para PNGs transparentes)
+  const [{ mascote, logo }, produtos] = await Promise.all([
+    precarregarImagensPDF(),
+    Promise.all(
+      (orcamento.produtos || []).map(async (item) => {
+        if (!item.imagemBase64) return item;
+        const imgInfo = await prepararImagemProdutoParaPDF(item.imagemBase64);
+        return { ...item, imgInfo };
+      })
+    )
+  ]);
 
   // Dados da empresa com fallbacks da Zeu-Tech
   const nomeEmpresa = dadosEmpresa.nome || 'Zeu Tech';
@@ -128,7 +137,7 @@ export async function gerarPdfOrcamento(orcamento, dadosEmpresa = {}) {
   doc.text('1. EQUIPAMENTOS E MATERIAIS', margin, y);
   y += 5;
 
-  const produtos = orcamento.produtos || [];
+  // (produtos já pré-processados de forma assíncrona no topo com suas dimensões e fundos corrigidos)
 
   // Dimensões da tabela
   const tableWidth = pageWidth - margin * 2;
@@ -188,19 +197,60 @@ export async function gerarPdfOrcamento(orcamento, dadosEmpresa = {}) {
       doc.setLineWidth(0.2);
       doc.line(margin, y + rowH, margin + tableWidth, y + rowH);
 
-      // Imagem do produto
+      // Imagem do produto: moldura e ajuste proporcional para não achatar
       const imgPad = 1.5;
-      const imgW = colImg - imgPad * 2;
-      const imgH = rowH - imgPad * 2;
-      if (item.imagemBase64) {
+      const boxW = colImg - imgPad * 2; // 19 mm
+      const boxH = rowH - imgPad * 2;   // 17 mm
+      const boxX = margin + imgPad;
+      const boxY = y + imgPad;
+
+      // Moldura com fundo branco puro
+      doc.setFillColor(255, 255, 255);
+      doc.rect(boxX, boxY, boxW, boxH, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.2);
+      doc.rect(boxX, boxY, boxW, boxH, 'S');
+
+      const imgDataUrl = item.imgInfo?.dataUrl || item.imagemBase64;
+      if (imgDataUrl) {
         try {
-          doc.addImage(item.imagemBase64, 'JPEG', margin + imgPad, y + imgPad, imgW, imgH, undefined, 'FAST');
-        } catch (_) { /* imagem inválida, deixa em branco */ }
+          const imgAspect = item.imgInfo?.aspect || 1;
+          const innerPad = 0.8; // margem interna para respirar
+          const availW = boxW - innerPad * 2;
+          const availH = boxH - innerPad * 2;
+          const boxAspect = availW / availH;
+
+          let renderW = availW;
+          let renderH = availH;
+
+          if (imgAspect > boxAspect) {
+            // Imagem mais larga que o container: fixa largura máxima e calcula altura proporcional
+            renderW = availW;
+            renderH = availW / imgAspect;
+          } else {
+            // Imagem mais alta ou quadrada: fixa altura máxima e calcula largura proporcional
+            renderH = availH;
+            renderW = availH * imgAspect;
+          }
+
+          // Centralização horizontal e vertical exata dentro do container
+          const renderX = boxX + innerPad + (availW - renderW) / 2;
+          const renderY = boxY + innerPad + (availH - renderH) / 2;
+
+          // Detecta formato para manter transparência nativa se for PNG (evitando que vire fundo preto)
+          const isPng = typeof imgDataUrl === 'string' && (
+            imgDataUrl.startsWith('data:image/png') ||
+            imgDataUrl.toLowerCase().includes('.png')
+          );
+          const format = item.imgInfo?.format || (isPng ? 'PNG' : 'JPEG');
+
+          doc.addImage(imgDataUrl, format, renderX, renderY, renderW, renderH, undefined, 'FAST');
+        } catch (_) { /* se houver erro ao desenhar imagem, mantém a moldura branca */ }
       } else {
         // Placeholder tracejado quando sem imagem
         doc.setDrawColor(203, 213, 225);
         doc.setLineDashPattern([1, 1], 0);
-        doc.rect(margin + imgPad, y + imgPad, imgW, imgH);
+        doc.rect(boxX, boxY, boxW, boxH);
         doc.setLineDashPattern([], 0);
       }
 
