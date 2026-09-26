@@ -1,0 +1,124 @@
+﻿Test Case ID,Name,Folder,Priority,Precondition,Step-by-Step Steps,Expected Result
+"CT-LOGIN-001","[CT-LOGIN-001] Login com credenciais válidas","Login e Autenticação","High","Usuário cadastrado no Firebase Auth","1. Acessar `http://localhost:5173/login`
+2. Preencher o campo **E-mail** com `teste@qa.portfolio.com`
+3. Preencher o campo **Senha** com `QATest@2026`
+4. Clicar em **Entrar**","- Usuário é redirecionado para `/dashboard`
+- Dashboard exibe os indicadores do sistema
+- Nenhuma mensagem de erro é exibida"
+"CT-LOGIN-002","[CT-LOGIN-002] Login com senha incorreta","Login e Autenticação","High","Usuário cadastrado no Firebase Auth","1. Acessar `/login`
+2. Preencher **E-mail** com `teste@qa.portfolio.com`
+3. Preencher **Senha** com `senhaErrada123`
+4. Clicar em **Entrar**","- Usuário **permanece** na tela de login
+- Uma mensagem de erro é exibida (ex: ""Credenciais inválidas"" ou similar)
+- Nenhuma navegação para dashboard ocorre"
+"CT-LOGIN-003","[CT-LOGIN-003] Login com campos em branco","Login e Autenticação","High","Nenhuma","1. Acessar `/login`
+2. Não preencher nenhum campo
+3. Clicar em **Entrar**","- Mensagem de validação exibida para os campos obrigatórios
+- Nenhuma chamada à API é realizada"
+"CT-LOGIN-004","[CT-LOGIN-004] Acesso direto a rota protegida sem login","Login e Autenticação","High","Usuário NÃO autenticado","1. Sem estar logado, digitar na barra de endereço: `http://localhost:5173/dashboard`
+2. Pressionar Enter","- Usuário é redirecionado para `/login`
+- Nenhum dado sensível é exibido"
+"CT-LOGIN-005","[CT-LOGIN-005] Logout","Login e Autenticação","Medium","Usuário autenticado","1. Estar logado no sistema
+2. Localizar a opção de sair/logout no menu ou avatar do usuário
+3. Clicar em **Sair**","- Sessão encerrada
+- Redirecionamento para `/login`
+- Tentativa de voltar ao dashboard redireciona para `/login`"
+"CT-COMPRA-001","[CT-COMPRA-001] Registrar nova compra com produto do estoque (happy path)","Compras","High","Pelo menos 1 produto cadastrado no estoque","1. Acessar o módulo **Compras**
+2. Clicar em **Nova Compra**
+3. Preencher o campo **Fornecedor** com `Distribuidora ABC`
+4. Confirmar que a **Data da Compra** já está preenchida com a data atual
+5. No campo **Nome do Produto**, clicar (sem digitar nada)
+6. Verificar se o dropdown aparece com produtos do estoque
+7. Selecionar o primeiro produto da lista
+8. Verificar se os campos **Categoria**, **Unidade de Compra**, **Unidade Base**, **Fator**, **Valor de Compra** e **Valor de Venda** foram preenchidos automaticamente
+9. Verificar que o campo **Quantidade** está **em branco**
+10. Preencher **Quantidade** com `5`
+11. Verificar que o **Valor Total** foi calculado automaticamente
+12. Selecionar **Forma de Pagamento** → `PIX`
+13. Clicar em **Salvar Compra**","- Compra registrada com sucesso
+- Mensagem de sucesso exibida (ou formulário fecha/recarrega)
+- Compra aparece na lista com os dados corretos
+- O estoque do produto aumenta na quantidade comprada"
+"CT-COMPRA-002","[CT-COMPRA-002] Autocomplete filtra por texto digitado","Compras","High","Pelo menos 2 produtos com nomes diferentes no estoque","1. Abrir formulário de nova compra
+2. No campo **Nome do Produto**, digitar as 3 primeiras letras de um produto existente (ex: `Cap`)
+3. Observar o dropdown de sugestões","- Dropdown exibe apenas produtos cujo nome contém o texto digitado
+- Produtos que não correspondem **não aparecem** na lista
+- A busca é case-insensitive (maiúsculas e minúsculas funcionam igual)"
+"CT-COMPRA-003","[CT-COMPRA-003] Campo Quantidade fica em branco ao selecionar produto","Compras","High","Pelo menos 1 produto no estoque","1. Abrir formulário de nova compra
+2. No campo **Nome do Produto**, selecionar qualquer produto do dropdown","- O campo **Quantidade** permanece **vazio** / sem valor
+- O badge **""Do Estoque""** aparece ao lado do label do produto
+- O texto **""← informe quantos comprou""** aparece ao lado do label Quantidade"
+"CT-COMPRA-004","[CT-COMPRA-004] Produto não encontrado no estoque","Compras","Medium","Nenhuma","1. Abrir formulário de nova compra
+2. No campo **Nome do Produto**, digitar um nome inexistente (ex: `ProdutoXXXZZZ`)","- Dropdown exibe mensagem: *""Nenhum produto encontrado — será cadastrado como novo""*
+- Os campos permanecem em branco para preenchimento manual
+- Não ocorre nenhum erro de JavaScript"
+"CT-COMPRA-005","[CT-COMPRA-005] Tentativa de salvar compra sem fornecedor","Compras","High","Nenhuma","1. Abrir formulário de nova compra
+2. Deixar o campo **Fornecedor** em branco
+3. Preencher os demais campos com dados válidos
+4. Clicar em **Salvar Compra**","- Compra **não é salva**
+- Mensagem de validação exibida: *""Fornecedor é obrigatório""*
+- Foco é direcionado para o campo com erro"
+"CT-COMPRA-006","[CT-COMPRA-006] Tentativa de salvar compra sem quantidade","Compras","High","Nenhuma","1. Abrir formulário de nova compra
+2. Preencher todos os campos, exceto **Quantidade**
+3. Clicar em **Salvar Compra**","- Compra **não é salva**
+- Mensagem de validação exibida: *""Quantidade é obrigatória""*"
+"CT-COMPRA-007","[CT-COMPRA-007] Cálculo automático do Valor Total","Compras","Medium","Formulário de compra aberto","1. Preencher **Quantidade** com `10`
+2. Preencher **Valor de Compra** com `25`
+3. Observar o campo **Valor Total**","- Valor Total exibe automaticamente `R$ 250,00`
+- Cálculo é feito em tempo real (sem necessidade de clicar em nada)"
+"CT-COMPRA-008","[CT-COMPRA-008] Editar compra existente","Compras","Medium","Pelo menos 1 compra cadastrada","1. Na lista de compras, localizar uma compra existente
+2. Clicar no ícone de **Editar** (lápis)
+3. Alterar o campo **Fornecedor**
+4. Clicar em **Atualizar Compra**","- Compra atualizada com o novo fornecedor
+- Registro na lista reflete a alteração"
+"CT-COMPRA-009","[CT-COMPRA-009] Excluir compra","Compras","Medium","Pelo menos 1 compra cadastrada","1. Na lista de compras, clicar no ícone de **Excluir** (lixeira)
+2. Modal de confirmação é exibido
+3. Clicar em **Excluir Compra**","- Modal fecha
+- Compra removida da lista
+- Nenhuma mensagem de erro"
+"CT-COMPRA-010","[CT-COMPRA-010] Cancelar exclusão de compra","Compras","Low","Modal de confirmação de exclusão aberto","1. Abrir o modal de exclusão de uma compra
+2. Clicar em **Cancelar**","- Modal fecha
+- Compra **permanece** na lista"
+"CT-COMPRA-011","[CT-COMPRA-011] Busca de compras por fornecedor","Compras","Medium","Pelo menos 2 compras cadastradas de fornecedores diferentes","1. Na tela de Compras, localizar a **barra de busca**
+2. Digitar o nome de um fornecedor existente","- Lista filtrada exibe apenas compras do fornecedor buscado
+- Compras de outros fornecedores ficam ocultas"
+"CT-ESTOQUE-001","[CT-ESTOQUE-001] Cadastrar novo produto (happy path)","Estoque","High","Nenhuma","1. Acessar o módulo **Estoque**
+2. Clicar em **Novo Produto**
+3. Preencher todos os campos com os dados acima
+4. Clicar em **Salvar**","- Produto cadastrado com sucesso
+- Produto aparece na lista do estoque com os dados corretos"
+"CT-ESTOQUE-002","[CT-ESTOQUE-002] Tentativa de cadastrar produto com nome duplicado","Estoque","High","Produto ""Capacitor 100uF 25V"" já cadastrado","1. Tentar cadastrar um segundo produto com o mesmo nome: `Capacitor 100uF 25V`","- Sistema bloqueia o cadastro
+- Mensagem de erro: *""Já existe um produto cadastrado com o nome semelhante/idêntico""*"
+"CT-ESTOQUE-003","[CT-ESTOQUE-003] Produto sem nome não pode ser salvo","Estoque","High","Nenhuma","1. Abrir formulário de novo produto
+2. Deixar o campo **Nome** em branco
+3. Preencher os demais campos
+4. Clicar em **Salvar**","- Produto **não é salvo**
+- Mensagem de validação exibida para o campo Nome"
+"CT-CLIENTE-001","[CT-CLIENTE-001] Cadastrar novo cliente (happy path)","Clientes","Medium","Nenhuma","1. Acessar o módulo **Clientes**
+2. Clicar em **Novo Cliente**
+3. Preencher os dados acima
+4. Clicar em **Salvar**","- Cliente cadastrado e exibido na lista"
+"CT-CLIENTE-002","[CT-CLIENTE-002] Buscar cliente pelo nome","Clientes","Medium","Clientes cadastrados","1. Na tela de Clientes, digitar `João` na barra de busca","- Lista filtrada mostra apenas clientes com ""João"" no nome
+- Busca insensível a maiúsculas/minúsculas"
+"CT-OS-001","[CT-OS-001] Criar nova Ordem de Serviço (happy path)","Ordens de Serviço","High","Cliente e técnico cadastrados","1. Acessar **Ordens de Serviço**
+2. Clicar em **Nova OS**
+3. Preencher os campos com os dados acima
+4. Clicar em **Salvar**","- OS criada com número gerado automaticamente
+- OS aparece na lista com status ""Aberta"""
+"CT-OS-002","[CT-OS-002] Alterar status de OS de ""Aberta"" para ""Concluída""","Ordens de Serviço","High","OS com status ""Aberta"" cadastrada","1. Localizar uma OS com status ""Aberta""
+2. Clicar em **Editar**
+3. Alterar o status para `Concluída`
+4. Clicar em **Salvar**","- OS atualizada com status ""Concluída""
+- Badge de status muda visualmente na lista"
+"CT-UI-001","[CT-UI-001] Responsividade em tela mobile","Interface e Usabilidade","Medium","Nenhuma","1. Abrir o DevTools do Chrome (`F12`)
+2. Ativar o modo responsivo (ícone de celular)
+3. Selecionar o dispositivo `iPhone SE` (375×667)
+4. Navegar por todos os módulos","- Menus se adaptam para versão mobile
+- Tabelas usam layout de cards em telas pequenas
+- Nenhum elemento ultrapassa os limites da tela"
+"CT-UI-002","[CT-UI-002] Alternância entre tema claro e escuro","Interface e Usabilidade","Low","Nenhuma","1. Localizar o botão de alternância de tema
+2. Clicar para ativar o **tema escuro**
+3. Navegar por pelo menos 3 módulos diferentes
+4. Retornar ao **tema claro**","- Tema muda sem necessidade de recarregar a página
+- Todos os textos permanecem legíveis nos dois temas
+- Preferência é mantida ao navegar entre módulos"

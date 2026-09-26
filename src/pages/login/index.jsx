@@ -98,6 +98,11 @@ export default function LoginPage() {
           <p className="text-slate-600 dark:text-slate-400">
             Acesse o sistema de gestão
           </p>
+          {import.meta.env.MODE === 'qa' && (
+            <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded-full text-xs font-semibold">
+              🧪 Ambiente de Testes (QA)
+            </div>
+          )}
         </div>
 
         {/* Card de Login */}

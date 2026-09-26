@@ -22,9 +22,16 @@ export default function Header({ title }) {
   return (
     <header className="h-16 lg:h-20 flex items-center justify-between px-3 sm:px-6 lg:px-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 shadow-sm transition-colors sticky top-0 z-30">
       <div className="flex items-center gap-2 pl-12 lg:pl-0 min-w-0 flex-1 mr-2">
-        <h1 className="text-base sm:text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
-          {title}
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-base sm:text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
+            {title}
+          </h1>
+          {import.meta.env.MODE === 'qa' && (
+            <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+              🧪 QA
+            </span>
+          )}
+        </div>
       </div>
       
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
