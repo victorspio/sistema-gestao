@@ -1,13 +1,17 @@
 import { X } from 'lucide-react';
 
-export default function Modal({ isOpen, onClose, title, children, footer, size = 'md' }) {
+export default function Modal({ isOpen, onClose, title, subtitle, icon: Icon, children, footer, size = 'md' }) {
   if (!isOpen) return null;
 
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-2xl',
-    xl: 'max-w-4xl'
+    xl: 'max-w-4xl',
+    '2xl': 'max-w-5xl',
+    '3xl': 'max-w-6xl',
+    '4xl': 'max-w-7xl',
+    full: 'max-w-[95vw]'
   };
 
   return (
@@ -20,15 +24,33 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
         />
 
         {/* Modal */}
-        <div className={`relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full my-auto max-h-[92vh] flex flex-col border border-slate-200 dark:border-slate-700 ${sizeClasses[size]}`}>
+        <div className={`relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full my-auto max-h-[92vh] flex flex-col border border-slate-200 dark:border-slate-700 ${sizeClasses[size] || sizeClasses.md}`}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 pr-2 truncate">
-              {title}
-            </h3>
+            <div className="flex items-center gap-3 min-w-0 pr-2">
+              {Icon && (
+                <div className="p-2 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 rounded-xl flex-shrink-0">
+                  <Icon size={20} />
+                </div>
+              )}
+              <div className="min-w-0">
+                {typeof title === 'string' ? (
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
+                    {title}
+                  </h3>
+                ) : (
+                  title
+                )}
+                {subtitle && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal truncate">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
+            </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+              className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors flex-shrink-0"
               aria-label="Fechar"
             >
               <X size={20} />
