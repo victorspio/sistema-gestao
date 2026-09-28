@@ -243,42 +243,24 @@ export default function ComprasPage() {
         </div>
 
         {/* ========================================================================= */}
-        {/* FORMULÁRIO DE CADASTRO / EDIÇÃO */}
+        {/* MODAL DE CADASTRO / EDIÇÃO DE COMPRA */}
         {/* ========================================================================= */}
-        {showForm && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 sm:p-8 transition-all">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 rounded-xl">
-                  <ShoppingBag size={20} />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                    {compraParaEditar ? 'Editar Compra' : 'Registrar Nova Compra'}
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    Os itens comprados serão adicionados ao estoque automaticamente.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setShowForm(false);
-                  setCompraParaEditar(null);
-                }}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <CompraForm
-              onSubmit={handleSubmit}
-              initialData={compraParaEditar}
-            />
-          </div>
-        )}
+        <Modal
+          isOpen={showForm}
+          onClose={() => {
+            setShowForm(false);
+            setCompraParaEditar(null);
+          }}
+          title={compraParaEditar ? 'Editar Compra' : 'Registrar Nova Compra'}
+          subtitle="Os itens comprados serão adicionados ao estoque automaticamente."
+          icon={ShoppingBag}
+          size="2xl"
+        >
+          <CompraForm
+            onSubmit={handleSubmit}
+            initialData={compraParaEditar}
+          />
+        </Modal>
 
         {/* ========================================================================= */}
         {/* 4. TABELA DE COMPRAS */}
