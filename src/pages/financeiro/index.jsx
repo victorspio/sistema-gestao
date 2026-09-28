@@ -9,7 +9,6 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Filter,
-  Download,
   Plus,
   Search,
   X,
@@ -21,8 +20,6 @@ import {
   BarChart3,
   ArrowRight,
   ExternalLink,
-  FileSpreadsheet,
-  FileText,
   Check,
   RotateCcw,
   Wallet,
@@ -52,7 +49,6 @@ import { useCompras } from '../../hooks/useCompras';
 import { useOrdensServico } from '../../hooks/useOrdensServico';
 import { formatCurrency, formatarData, formatReal } from '../../utils/formatters';
 import { LoadingSpinner } from '../../components/ui/LoadingComponents';
-import { exportarFinanceiroPDF, exportarFinanceiroCSV } from './utils/exportarFinanceiro';
 
 // Paleta Zeu-Tech refinada para gráficos
 const PALETA_CORES = [
@@ -114,8 +110,6 @@ export default function FinanceiroPage() {
   // Modais e Controles de Ação
   const [modalAberto, setModalAberto] = useState(null); // 'recebido', 'aReceber', 'despesas', 'saldo', 'novaContaPagar', 'novaContaReceber', 'baixaConta', 'todasVencer', 'todasReceber', 'todasPagar'
   const [itemBaixa, setItemBaixa] = useState(null); // { conta, tipo: 'receber' | 'pagar' }
-  const [dropdownExportar, setDropdownExportar] = useState(false);
-  const [exportando, setExportando] = useState(false);
   const [abaMovimentacoes, setAbaMovimentacoes] = useState('receitas'); // 'receitas' | 'despesas'
 
   // Formulário Nova Conta a Pagar
@@ -824,37 +818,6 @@ export default function FinanceiroPage() {
     }
   }, [periodo, dataInicio, dataFim]);
 
-  const handleExportarPDF = async () => {
-    try {
-      setExportando(true);
-      await exportarFinanceiroPDF({
-        estatisticas,
-        contasReceber: listaContasReceber,
-        contasPagar: listaContasPagar,
-        periodoTexto: textoPeriodo
-      });
-      setDropdownExportar(false);
-    } catch (err) {
-      alert(`Erro ao exportar PDF: ${err.message}`);
-    } finally {
-      setExportando(false);
-    }
-  };
-
-  const handleExportarCSV = () => {
-    try {
-      exportarFinanceiroCSV({
-        estatisticas,
-        contasReceber: listaContasReceber,
-        contasPagar: listaContasPagar,
-        periodoTexto: textoPeriodo
-      });
-      setDropdownExportar(false);
-    } catch (err) {
-      alert(`Erro ao exportar CSV: ${err.message}`);
-    }
-  };
-
   const loading = loadingFinanceiro || loadingVendas || loadingCompras;
 
   return (
@@ -897,37 +860,6 @@ export default function FinanceiroPage() {
                 <Plus size={16} />
                 Nova Receita
               </button>
-
-              {/* Botão Exportar Relatório com Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setDropdownExportar(!dropdownExportar)}
-                  disabled={exportando}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow disabled:opacity-50"
-                >
-                  <Download size={16} />
-                  <span>{exportando ? 'Exportando...' : 'Exportar Relatório'}</span>
-                </button>
-
-                {dropdownExportar && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 z-30">
-                    <button
-                      onClick={handleExportarPDF}
-                      className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                    >
-                      <FileText size={16} className="text-rose-500" />
-                      Exportar em PDF
-                    </button>
-                    <button
-                      onClick={handleExportarCSV}
-                      className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                    >
-                      <FileSpreadsheet size={16} className="text-emerald-500" />
-                      Exportar em CSV (Excel)
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>

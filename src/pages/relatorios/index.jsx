@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileText,
-  Download,
   TrendingUp,
   Package,
   Users,
@@ -14,7 +13,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  ChevronDown,
   RotateCcw,
   Calendar,
   Layers,
@@ -49,7 +47,6 @@ import { useCompras } from '../../hooks/useCompras';
 import { useVendas } from '../../hooks/useVendas';
 import { formatCurrency, formatarData } from '../../utils/formatters';
 import { LoadingSpinner } from '../../components/ui/LoadingComponents';
-import { exportarDashboardPDF, exportarDashboardCSV } from './utils/exportarDashboard';
 
 // Cores harmoniosas do Design System Zeu-Tech
 const PALETA_CORES = [
@@ -91,10 +88,6 @@ export default function RelatoriosPage() {
   const [tipoRelatorio, setTipoRelatorio] = useState('todos');
   const [clienteFiltro, setClienteFiltro] = useState('todos');
   const [categoriaFiltro, setCategoriaFiltro] = useState('todos');
-
-  // Estado do dropdown de exportação
-  const [dropdownExportarAberto, setDropdownExportarAberto] = useState(false);
-  const [exportando, setExportando] = useState(false);
 
   // Carregamento de dados inicial
   useEffect(() => {
@@ -581,42 +574,6 @@ export default function RelatoriosPage() {
     ];
   }, [dadosFiltrados]);
 
-  // Exportar Relatório em PDF
-  const handleExportarPDF = async () => {
-    try {
-      setExportando(true);
-      setDropdownExportarAberto(false);
-      await exportarDashboardPDF({
-        metricas,
-        ordensServico: dadosFiltrados.ordensServico,
-        produtosEstoqueBaixo,
-        periodoTexto: intervaloData.texto,
-        tipoFiltro: tipoRelatorio
-      });
-    } catch (err) {
-      console.error('Erro ao exportar PDF:', err);
-      alert('Erro ao gerar relatório PDF: ' + err.message);
-    } finally {
-      setExportando(false);
-    }
-  };
-
-  // Exportar Relatório em CSV / Excel
-  const handleExportarCSV = () => {
-    try {
-      setDropdownExportarAberto(false);
-      exportarDashboardCSV({
-        metricas,
-        ordensServico: dadosFiltrados.ordensServico,
-        produtosEstoqueBaixo,
-        periodoTexto: intervaloData.texto
-      });
-    } catch (err) {
-      console.error('Erro ao exportar CSV:', err);
-      alert('Erro ao exportar CSV: ' + err.message);
-    }
-  };
-
   // Limpar Filtros
   const handleLimparFiltros = () => {
     setPeriodo('mes');
@@ -644,44 +601,6 @@ export default function RelatoriosPage() {
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Obtenha uma visão completa do desempenho, faturamento e da operação da sua empresa.
             </p>
-          </div>
-
-          {/* BOTÃO EXPORTAR COM DROPDOWN */}
-          <div className="relative self-start md:self-auto">
-            <button
-              onClick={() => setDropdownExportarAberto(!dropdownExportarAberto)}
-              disabled={exportando || loadingGeral}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#0057b8] to-[#00c8ff] hover:opacity-95 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md transition-all whitespace-nowrap disabled:opacity-50"
-            >
-              <Download size={17} />
-              <span>{exportando ? 'Exportando...' : 'Exportar Relatório'}</span>
-              <ChevronDown size={15} className={`transition-transform duration-200 ${dropdownExportarAberto ? 'rotate-180' : ''}`} />
-            </button>
-
-            {dropdownExportarAberto && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 z-30 animate-fadeIn">
-                <button
-                  onClick={handleExportarPDF}
-                  className="w-full text-left px-4 py-2.5 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5"
-                >
-                  <FileText size={16} className="text-red-500" />
-                  <div>
-                    <span className="font-semibold block">Relatório em PDF</span>
-                    <span className="text-[10px] text-slate-400">Documento formatado para impressão</span>
-                  </div>
-                </button>
-                <button
-                  onClick={handleExportarCSV}
-                  className="w-full text-left px-4 py-2.5 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2.5 border-t border-slate-100 dark:border-slate-700/60"
-                >
-                  <Download size={16} className="text-emerald-500" />
-                  <div>
-                    <span className="font-semibold block">Exportar para Excel / CSV</span>
-                    <span className="text-[10px] text-slate-400">Planilha de dados completa</span>
-                  </div>
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
