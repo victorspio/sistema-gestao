@@ -8,7 +8,8 @@ import { calcularEntradaEstoque, calcularPrecoBaseEntrada, UNIDADES } from '../.
 
 // Schema de validação
 const compraSchema = z.object({
-  fornecedor: z.string().min(1, 'Fornecedor é obrigatório'),
+  nomeProduto: z.string().optional(),
+  fornecedor: z.string().optional(),
   dataCompra: z.string().min(1, 'Data é obrigatória'),
   itens: z.array(
     z.object({
@@ -50,6 +51,7 @@ export default function CompraForm({ onSubmit, initialData }) {
   } = useForm({
     resolver: zodResolver(compraSchema),
     defaultValues: {
+      nomeProduto: '',
       fornecedor: '',
       dataCompra: new Date().toISOString().split('T')[0],
       itens: [{
@@ -78,8 +80,24 @@ export default function CompraForm({ onSubmit, initialData }) {
         valorCompra:    item.valorCompra?.toString() || item.valorUnitario?.toString() || '',
         valorVenda:     item.valorVenda?.toString() || ''
       }));
+
+      const primeiroNome = itensFormatados[0]?.nomeProduto || initialData.nomeProduto || '';
+
+      // Detecta se fornecedor foi preenchido erroneamente com o nome do produto (bug antigo)
+      const fornecedorIsNomeProduto = Boolean(
+        initialData.fornecedor && (
+          (primeiroNome && initialData.fornecedor.trim().toLowerCase() === primeiroNome.trim().toLowerCase()) ||
+          (initialData.nomeProduto && initialData.fornecedor.trim().toLowerCase() === initialData.nomeProduto.trim().toLowerCase()) ||
+          (initialData.observacoes?.includes('Compra automática') && (
+            initialData.fornecedor.trim().toLowerCase() === (initialData.nomeProduto || primeiroNome || '').trim().toLowerCase() ||
+            initialData.fornecedor.trim() === 'Produto sem nome'
+          ))
+        )
+      );
+
       reset({
-        fornecedor: initialData.fornecedor || '',
+        nomeProduto: primeiroNome,
+        fornecedor: fornecedorIsNomeProduto ? '' : (initialData.fornecedor || ''),
         dataCompra: initialData.dataCompra
           ? (typeof initialData.dataCompra === 'string'
               ? initialData.dataCompra.split('T')[0]
@@ -87,7 +105,7 @@ export default function CompraForm({ onSubmit, initialData }) {
                 ? new Date(initialData.dataCompra.toDate()).toISOString().split('T')[0]
                 : new Date(initialData.dataCompra).toISOString().split('T')[0])
           : new Date().toISOString().split('T')[0],
-        itens: itensFormatados.length > 0 ? itensFormatados : [{ nomeProduto: '', categoria: '', unidade: 'un', unidadeCompra: 'un', fatorConversao: 1, quantidade: '', valorCompra: '', valorVenda: '' }],
+        itens: itensFormatados.length > 0 ? itensFormatados : [{ nomeProduto: primeiroNome, categoria: '', unidade: 'un', unidadeCompra: 'un', fatorConversao: 1, quantidade: '', valorCompra: '', valorVenda: '' }],
         formaPagamento: initialData.formaPagamento || '',
         observacoes:    initialData.observacoes    || ''
       });
@@ -125,6 +143,9 @@ export default function CompraForm({ onSubmit, initialData }) {
 
   const selecionarProduto = (index, produto) => {
     setValue(`itens.${index}.nomeProduto`,    produto.nome);
+    if (index === 0) {
+      setValue('nomeProduto', produto.nome);
+    }
     setValue(`itens.${index}.categoria`,      produto.categoria || '');
     setValue(`itens.${index}.unidade`,        produto.unidade || 'un');
     setValue(`itens.${index}.unidadeCompra`,  produto.unidade || 'un');
@@ -139,6 +160,9 @@ export default function CompraForm({ onSubmit, initialData }) {
 
   const handleNomeProdutoChange = (e, index) => {
     register(`itens.${index}.nomeProduto`).onChange(e);
+    if (index === 0) {
+      setValue('nomeProduto', e.target.value);
+    }
     buscarProdutosSimilares(e.target.value, index);
     if (itensDoEstoque[index]) {
       setItensDoEstoque(prev => { const n = { ...prev }; delete n[index]; return n; });
@@ -158,16 +182,20 @@ export default function CompraForm({ onSubmit, initialData }) {
   }, []);
 
   const handleFormSubmit = async (data) => {
+    const primeiroNome = data.nomeProduto?.trim() || data.itens?.[0]?.nomeProduto?.trim() || '';
     const dadosProcessados = {
       ...data,
+      nomeProduto: primeiroNome,
+      fornecedor: data.fornecedor?.trim() || 'Não informado',
       valorTotal,
-      itens: data.itens.map(item => {
+      itens: data.itens.map((item, idx) => {
         const fator     = Number(item.fatorConversao) || 1;
         const qtdCompra = parseFloat(item.quantidade)  || 0;
         const qtdBase   = calcularEntradaEstoque(qtdCompra, fator);
         const precoBase = calcularPrecoBaseEntrada(parseFloat(item.valorCompra) || 0, fator);
         return {
           ...item,
+          nomeProduto: (idx === 0 && primeiroNome) ? primeiroNome : (item.nomeProduto?.trim() || ''),
           quantidadeComprada: qtdCompra,
           unidadeComprada:    item.unidadeCompra,
           fatorConversao:     fator,
@@ -182,18 +210,38 @@ export default function CompraForm({ onSubmit, initialData }) {
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Fornecedor *</label>
-          <input type="text" {...register('fornecedor')}
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nome do Produto *</label>
+          <input
+            type="text"
+            {...register('nomeProduto')}
+            onChange={(e) => {
+              register('nomeProduto').onChange(e);
+              setValue('itens.0.nomeProduto', e.target.value);
+            }}
             className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all"
-            placeholder="Nome do fornecedor" />
+            placeholder="Nome do produto"
+          />
+          {errors.nomeProduto && <p className="mt-1 text-sm text-red-600">{errors.nomeProduto.message}</p>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Fornecedor</label>
+          <input
+            type="text"
+            {...register('fornecedor')}
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all"
+            placeholder="Nome do fornecedor (opcional)"
+          />
           {errors.fornecedor && <p className="mt-1 text-sm text-red-600">{errors.fornecedor.message}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Data da Compra *</label>
-          <input type="date" {...register('dataCompra')}
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all" />
+          <input
+            type="date"
+            {...register('dataCompra')}
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all"
+          />
           {errors.dataCompra && <p className="mt-1 text-sm text-red-600">{errors.dataCompra.message}</p>}
         </div>
       </div>

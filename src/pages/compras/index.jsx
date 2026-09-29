@@ -65,15 +65,37 @@ export default function ComprasPage() {
     }
   }, [debouncedSearchTerm]);
 
+  const getNomeProdutoExibicao = useCallback((compra) => {
+    if (!compra) return 'Produto não informado';
+    return (
+      compra.itens?.[0]?.nomeProduto?.trim() ||
+      compra.nomeProduto?.trim() ||
+      'Produto não informado'
+    );
+  }, []);
+
+  const getFornecedorExibicao = useCallback((compra) => {
+    if (!compra) return 'Não informado';
+    const primeiroNome = compra.itens?.[0]?.nomeProduto || compra.nomeProduto || '';
+    if (!compra.fornecedor || (primeiroNome && compra.fornecedor.trim().toLowerCase() === primeiroNome.trim().toLowerCase())) {
+      return 'Não informado';
+    }
+    return compra.fornecedor?.trim() || 'Não informado';
+  }, []);
+
   // Estatísticas / KPIs de Compras
   const stats = useMemo(() => {
     const total = compras.length;
     const totalValor = compras.reduce((acc, c) => acc + (parseFloat(c.valorTotal) || 0), 0);
-    const fornecedoresUnicos = new Set(compras.map(c => c.fornecedor?.trim().toLowerCase()).filter(Boolean)).size;
+    const fornecedoresUnicos = new Set(
+      compras
+        .map(c => getFornecedorExibicao(c).trim().toLowerCase())
+        .filter(f => f && f !== 'não informado')
+    ).size;
     const mediaPorCompra = total > 0 ? totalValor / total : 0;
 
     return { total, totalValor, fornecedoresUnicos, mediaPorCompra };
-  }, [compras]);
+  }, [compras, getFornecedorExibicao]);
 
   const handleSubmit = useCallback(async (data) => {
     try {
@@ -297,8 +319,8 @@ export default function ComprasPage() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 text-slate-400 uppercase tracking-wider font-semibold">
-                    <th className="py-3.5 px-4">Código / Fornecedor</th>
-                    <th className="py-3.5 px-4">Itens Comprados</th>
+                    <th className="py-3.5 px-4">Código / Produto</th>
+                    <th className="py-3.5 px-4">Fornecedor</th>
                     <th className="py-3.5 px-4 text-center">Data</th>
                     <th className="py-3.5 px-4 text-center">Pagamento</th>
                     <th className="py-3.5 px-4 text-right">Valor Total</th>
@@ -314,7 +336,7 @@ export default function ComprasPage() {
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-500 font-bold text-xs flex-shrink-0">
-                            <Building2 size={18} />
+                            <Package size={18} />
                           </div>
                           <div>
                             <div className="flex items-center gap-1.5">
@@ -324,8 +346,13 @@ export default function ComprasPage() {
                                 </span>
                               )}
                               <p className="font-semibold text-slate-900 dark:text-slate-100 text-xs">
-                                {compra.fornecedor}
+                                {getNomeProdutoExibicao(compra)}
                               </p>
+                              {compra.itens && compra.itens.length > 1 && (
+                                <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold">
+                                  +{compra.itens.length - 1} outro(s)
+                                </span>
+                              )}
                             </div>
                             {compra.observacoes && (
                               <p className="text-[11px] text-slate-400 truncate max-w-xs mt-0.5">
@@ -337,22 +364,9 @@ export default function ComprasPage() {
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <div className="space-y-0.5">
-                          {compra.itens && compra.itens.length > 0 ? (
-                            <>
-                              <p className="text-slate-800 dark:text-slate-200 font-medium truncate max-w-[220px]">
-                                {compra.itens[0].nomeProduto}
-                              </p>
-                              {compra.itens.length > 1 && (
-                                <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold">
-                                  +{compra.itens.length - 1} outro(s) item(ns)
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </div>
+                        <span className="text-slate-700 dark:text-slate-300 font-medium">
+                          {getFornecedorExibicao(compra)}
+                        </span>
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap text-center text-slate-600 dark:text-slate-300">
@@ -413,7 +427,7 @@ export default function ComprasPage() {
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2.5">
                       <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-500 font-bold text-xs flex-shrink-0">
-                        <Building2 size={18} />
+                        <Package size={18} />
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
@@ -423,11 +437,14 @@ export default function ComprasPage() {
                             </span>
                           )}
                           <h4 className="font-semibold text-sm text-slate-900 dark:text-slate-100">
-                            {compra.fornecedor}
+                            {getNomeProdutoExibicao(compra)}
                           </h4>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {compra.dataCompra ? formatarData(compra.dataCompra) : '-'}
+                          {getFornecedorExibicao(compra) !== 'Não informado' && (
+                            <span className="text-slate-400 dark:text-slate-500"> · Fornecedor: {getFornecedorExibicao(compra)}</span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -513,7 +530,7 @@ export default function ComprasPage() {
                 <div className="sm:col-span-3 pt-2 border-t border-slate-200 dark:border-slate-700/60">
                   <span className="text-slate-400 block mb-0.5">Fornecedor:</span>
                   <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    {compraDetalhes.fornecedor}
+                    {getFornecedorExibicao(compraDetalhes)}
                   </span>
                 </div>
               </div>

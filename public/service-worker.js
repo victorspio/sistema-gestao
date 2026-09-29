@@ -1,14 +1,15 @@
 // Service Worker para cache offline e melhor performance
-const CACHE_VERSION = Date.now();
-const CACHE_NAME = `zeu-tech-v${CACHE_VERSION}`;
-const RUNTIME_CACHE = `zeu-tech-runtime-v${CACHE_VERSION}`;
+const CACHE_VERSION = '2.0.1';
+const CACHE_NAME = `seu-gestor-v${CACHE_VERSION}`;
+const RUNTIME_CACHE = `seu-gestor-runtime-v${CACHE_VERSION}`;
 
 // Arquivos essenciais para cache
 const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo.png'
+  '/favicon.png',
+  '/logo_gestor.png'
 ];
 
 // Instala o service worker e faz cache dos arquivos essenciais

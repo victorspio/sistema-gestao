@@ -190,7 +190,7 @@ export function useEstoque() {
         const compraRef = doc(col('compras'));
         const codigoCompra = gerarCodigoCompra();
         batch.set(compraRef, {
-          codigoCompra, fornecedor: dados.fornecedor?.trim() || dados.nome?.trim() || 'Produto sem nome',
+          codigoCompra, fornecedor: dados.fornecedor?.trim() || 'Não informado',
           dataCompra: new Date(), valorTotal,
           observacoes: `Compra automática - Cadastro inicial do produto: ${dados.nome?.trim() || ''}`,
           produtoId: produtoRef.id, nomeProduto: dados.nome?.trim() || '',
