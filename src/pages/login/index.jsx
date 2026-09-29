@@ -88,15 +88,16 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo e Título */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <Logo size="large" />
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-3">
+            <Logo
+              src="/logo_login.png"
+              alt="Seu Gestor - Visão e Controle Total"
+              size="login"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Meu Sistema  {/* TODO: Nome do cliente */}
-          </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            Acesse o sistema de gestão
+            Acesse o Seu Gestor
           </p>
           {import.meta.env.MODE === 'qa' && (
             <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded-full text-xs font-semibold">
@@ -199,7 +200,7 @@ export default function LoginPage() {
 
         {/* Rodapé */}
         <div className="text-center mt-6 text-sm text-slate-600 dark:text-slate-400">
-          © 2026 Meu Sistema - Todos os direitos reservados  {/* TODO: Nome do cliente */}
+          © 2026 Seu Gestor - Todos os direitos reservados
         </div>
       </div>
     </div>
