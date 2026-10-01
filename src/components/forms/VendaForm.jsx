@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+﻿import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { vendaSchema } from '../../utils/schemas';
@@ -627,7 +627,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
             </label>
             <div className="flex gap-2 items-stretch">
               <select
-                className="flex-1 min-w-0 px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                className="flex-1 min-w-0 px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] transition-all"
                 {...register('clienteId')}
                 value={clienteIdAtual || ''}
               >
@@ -641,7 +641,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
               <button
                 type="button"
                 onClick={() => setShowClienteModal(true)}
-                className="flex items-center justify-center flex-shrink-0 w-12 px-0 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-colors"
+                className="flex items-center justify-center flex-shrink-0 w-12 px-0 brand-bg hover:opacity-85 text-white rounded-xl transition-colors"
                 title="Cadastrar novo cliente"
               >
                 <UserPlus size={20} />
@@ -659,7 +659,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
             </label>
             <input
               type="date"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] transition-all"
               {...register('dataVenda')}
             />
             {errors.dataVenda && (
@@ -677,7 +677,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
             <button
               type="button"
               onClick={() => append({ produto: '', quantidade: '', valorUnitario: '' })}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 brand-bg hover:opacity-85 text-white rounded-lg transition-colors"
             >
               <Plus size={16} />
               Adicionar Produto
@@ -697,7 +697,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                       Produto *
                     </label>
                     <select
-                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
                       {...register(`itens.${index}.produto`, {
                         onChange: (e) => handleProdutoChange(index, e.target.value)
                       })}
@@ -787,7 +787,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                           className={`w-full px-4 py-2 bg-white dark:bg-slate-700 border rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 ${
                             errosEstoque[index] 
                               ? 'border-red-500 focus:ring-red-500' 
-                              : 'border-slate-200 dark:border-slate-600 focus:ring-orange-500'
+                              : 'border-slate-200 dark:border-slate-600 focus:ring-[var(--brand-primary,#00c8ff)]'
                           }`}
                           {...register(`itens.${index}.quantidade`, {
                             onChange: calcularTotal,
@@ -818,7 +818,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                             min="0"
                             placeholder="0,00"
                             onWheel={(e) => e.target.blur()}
-                            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
                             readOnly
                             {...register(`itens.${index}.valorUnitario`, {
                               valueAsNumber: true,
@@ -863,7 +863,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                 Status *
               </label>
               <select
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] transition-all"
                 {...register('status')}
               >
                 <option value="em_andamento">Fiado</option>
@@ -882,7 +882,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                 Forma de Pagamento
               </label>
               <select
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] transition-all"
                 {...register('formaPagamento')}
               >
                 <option value="dinheiro">Dinheiro</option>
@@ -1033,7 +1033,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                     type="number"
                     min="1"
                     max="12"
-                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] transition-all"
                     {...register('parcelamento.numeroParcelas')}
                     onWheel={(e) => e.target.blur()}
                   />
@@ -1049,7 +1049,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                     min="1"
                     max="31"
                     placeholder="Ex: 10 (todo dia 10)"
-                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] transition-all"
                     {...register('parcelamento.diaVencimento')}
                     onWheel={(e) => e.target.blur()}
                   />
@@ -1094,7 +1094,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                   min="0"
                   placeholder="0,00"
                   onWheel={(e) => e.target.blur()}
-                  className="w-full pl-10 pr-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full pl-10 pr-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
                   {...register('desconto', {
                     valueAsNumber: true,
                     onChange: calcularTotal
@@ -1133,7 +1133,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                   }
                   
                   return (
-                    <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    <span className="text-2xl font-bold brand-text">
                       R$ {totalBase.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   );
@@ -1149,7 +1149,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
             Observações
           </label>
           <textarea
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all min-h-[100px]"
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] transition-all min-h-[100px]"
             placeholder="Informações adicionais sobre a venda..."
             {...register('observacoes')}
           />
@@ -1260,7 +1260,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
                               }
                             }
                           }}
-                          className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors"
+                          className="px-4 py-2 brand-bg hover:opacity-85 text-white text-sm font-medium rounded-lg transition-colors"
                         >
                           Desmarcar
                         </button>
@@ -1288,7 +1288,7 @@ export default function VendaForm({ onSubmit, clientes, initialData, onClienteAd
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 brand-bg hover:opacity-85 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Salvando...' : initialData ? 'Atualizar Venda' : 'Cadastrar Venda'}
           </button>

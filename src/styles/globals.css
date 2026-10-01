@@ -22,14 +22,30 @@
   .btn {
     @apply px-4 py-2 rounded-lg font-medium transition-colors;
   }
-  .btn-primary {
-    @apply bg-[#00c8ff] text-white hover:bg-[#00a3d1];
+
+  /* Botão principal — sempre usa a cor dinâmica da empresa */
+  .btn-primary,
+  .btn-brand {
+    background-color: var(--brand-primary, #00c8ff);
+    color: #ffffff;
+    transition: opacity 0.15s ease, transform 0.1s ease;
   }
+  .btn-primary:hover,
+  .btn-brand:hover {
+    opacity: 0.88;
+  }
+  .btn-primary:active,
+  .btn-brand:active {
+    transform: scale(0.97);
+  }
+
   .btn-outline {
     @apply border border-gray-300 hover:bg-gray-50;
   }
+
   .input {
-    @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00c8ff];
+    @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none;
+    --tw-ring-color: var(--brand-primary, #00c8ff);
   }
 }
 

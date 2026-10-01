@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Shield, 
   Plus, 
@@ -339,7 +339,7 @@ export default function EquipamentosPage() {
               placeholder="Buscar por cliente, equipamento, serial, marca..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
             />
           </div>
 
@@ -347,7 +347,7 @@ export default function EquipamentosPage() {
             <select
               value={filtroCliente}
               onChange={(e) => setFiltroCliente(e.target.value)}
-              className="w-full sm:w-auto px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 max-w-xs truncate"
+              className="w-full sm:w-auto px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] max-w-xs truncate"
             >
               <option value="todos">Todos os Clientes</option>
               {clientes.map(c => (
@@ -357,7 +357,7 @@ export default function EquipamentosPage() {
 
             <button
               onClick={() => handleAbrirNovo()}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
             >
               <Plus size={18} />
               Registrar Equipamento
@@ -401,7 +401,7 @@ export default function EquipamentosPage() {
                         {/* Nome do Cliente */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold text-sm shrink-0">
+                            <div className="w-10 h-10 rounded-xl brand-bg/10 dark:brand-bg/20 brand-text flex items-center justify-center font-bold text-sm shrink-0">
                               {item.clienteNome.charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -411,7 +411,7 @@ export default function EquipamentosPage() {
                                   e.stopPropagation();
                                   setClienteModalId(item.id);
                                 }}
-                                className="font-bold text-slate-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 text-left transition-colors flex items-center gap-1.5"
+                                className="font-bold text-slate-900 dark:text-white hover:brand-text dark:hover:text-orange-400 text-left transition-colors flex items-center gap-1.5"
                               >
                                 <span>{item.clienteNome}</span>
                                 <ExternalLink size={13} className="opacity-0 group-hover:opacity-100 text-orange-500 transition-opacity" />
@@ -477,7 +477,7 @@ export default function EquipamentosPage() {
                           <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => handleAbrirNovo(item.clienteId)}
-                              className="p-1.5 text-slate-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-lg transition-colors"
+                              className="p-1.5 text-slate-500 hover:brand-text hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-lg transition-colors"
                               title="Adicionar Equipamento para este Cliente"
                             >
                               <Plus size={16} />
@@ -485,7 +485,7 @@ export default function EquipamentosPage() {
 
                             <button
                               onClick={() => setClienteModalId(item.id)}
-                              className="px-3 py-1.5 bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-900/40 text-orange-600 dark:text-orange-400 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
+                              className="px-3 py-1.5 bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-900/40 brand-text rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
                             >
                               <Eye size={14} />
                               <span>Ver todos ({item.total})</span>
@@ -531,7 +531,7 @@ export default function EquipamentosPage() {
 
                 <button
                   onClick={() => handleAbrirNovo(clienteAtivoModal.clienteId)}
-                  className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 self-start sm:self-auto shadow-sm transition-colors"
+                  className="px-3 py-1.5 brand-bg hover:opacity-85 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 self-start sm:self-auto shadow-sm transition-colors"
                 >
                   <Plus size={14} />
                   <span>Novo Equipamento</span>
@@ -773,7 +773,7 @@ export default function EquipamentosPage() {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold shadow-md"
+                className="px-5 py-2 brand-bg hover:opacity-85 text-white rounded-lg text-sm font-semibold shadow-md"
               >
                 {equipamentoEditar ? 'Atualizar' : 'Salvar'}
               </button>

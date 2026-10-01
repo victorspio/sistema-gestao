@@ -192,7 +192,7 @@ export default function ClientesPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowForm(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow"
+                className="inline-flex items-center gap-2 px-4 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow"
               >
                 <Plus size={18} />
                 <span>Novo Cliente</span>
@@ -355,7 +355,7 @@ export default function ClientesPage() {
             <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{error}</p>
             <button
               onClick={() => listarClientes(debouncedSearchTerm)}
-              className="px-4 py-2 bg-cyan-500 text-white rounded-xl text-sm font-semibold hover:bg-cyan-600 transition-colors"
+              className="px-4 py-2 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-semibold transition-colors"
             >
               Tentar novamente
             </button>
@@ -821,7 +821,7 @@ export default function ClientesPage() {
                     setShowDetalhes(false);
                     setShowForm(true);
                   }}
-                  className="px-3.5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+                  className="px-3.5 py-2 brand-bg hover:opacity-85 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
                 >
                   <Edit size={15} />
                   Editar Cliente

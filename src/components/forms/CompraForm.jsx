@@ -251,7 +251,7 @@ export default function CompraForm({ onSubmit, initialData }) {
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Produtos Comprados</h3>
           <button type="button"
             onClick={() => append({ nomeProduto: '', categoria: '', unidade: 'un', unidadeCompra: 'un', fatorConversao: 1, quantidade: '', valorCompra: '', valorVenda: '' })}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold transition-all shadow-sm">
+            className="flex items-center gap-1.5 px-3 py-1.5 brand-bg hover:opacity-85 text-white rounded-xl text-xs font-semibold transition-all shadow-sm">
             <Plus size={15} /> Adicionar Produto
           </button>
         </div>
@@ -528,7 +528,7 @@ export default function CompraForm({ onSubmit, initialData }) {
           Cancelar
         </button>
         <button type="submit" disabled={isSubmitting}
-          className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow">
+          className="px-5 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow">
           {isSubmitting ? 'Salvando...' : initialData ? 'Atualizar Compra' : 'Salvar Compra'}
         </button>
       </div>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ModalConversaoFornecedor.jsx
  *
  * Modal exibido durante a importação de NF-e quando não existe conversão
@@ -124,13 +124,13 @@ export default function ModalConversaoFornecedor({ itens, produtos = [], onConfi
                 onChange={e => { setFator(e.target.value); setErro(''); }}
                 onWheel={e => e.target.blur()}
                 placeholder="Ex: 10"
-                className="flex-1 px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="flex-1 px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
               />
               <select
                 id="unidade-base-select"
                 value={unidadeBase}
                 onChange={e => setUnidadeBase(e.target.value)}
-                className="px-3 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="px-3 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
               >
                 {unidadesOpcoes.map(({ sigla, nome }) => (
                   <option key={sigla} value={sigla}>{sigla.toUpperCase()} — {nome}</option>
@@ -154,7 +154,7 @@ export default function ModalConversaoFornecedor({ itens, produtos = [], onConfi
               id="produto-vinculado-select"
               value={produtoIdVinculado}
               onChange={e => setProdutoIdVinculado(e.target.value)}
-              className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
             >
               <option value="">— Criar como novo produto —</option>
               {produtos.map(p => (
@@ -198,7 +198,7 @@ export default function ModalConversaoFornecedor({ itens, produtos = [], onConfi
             type="button"
             id="confirmar-conversao-btn"
             onClick={handleConfirmar}
-            className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
+            className="flex-1 px-4 py-3 brand-bg hover:opacity-85 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors"
           >
             {indiceAtual < total - 1 ? (
               <>Confirmar e Próximo <ChevronRight className="w-4 h-4" /></>

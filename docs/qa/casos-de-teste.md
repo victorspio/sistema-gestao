@@ -39,12 +39,12 @@
 | **ID** | CT-LOGIN-001 |
 | **Prioridade** | 🔴 Alta |
 | **Pré-condição** | Usuário cadastrado no Firebase Auth |
-| **Status** | 🔄 |
+| **Status** | Concluída |
 
 **Passos:**
 1. Acessar `http://localhost:5173/login`
-2. Preencher o campo **E-mail** com `teste@qa.portfolio.com`
-3. Preencher o campo **Senha** com `QATest@2026`
+2. Preencher o campo **E-mail** com `teste@gmail.com`
+3. Preencher o campo **Senha** com `teste123`
 4. Clicar em **Entrar**
 
 **Resultado Esperado:**

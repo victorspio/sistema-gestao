@@ -569,7 +569,7 @@ export default function ProdutoForm({ onSubmit, initialData, onCancel }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-5 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-xs font-semibold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Salvando...' : initialData ? 'Atualizar Produto' : 'Cadastrar Produto'}
         </button>

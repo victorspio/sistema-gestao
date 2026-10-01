@@ -29,7 +29,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, icon: Icon, ch
           <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
             <div className="flex items-center gap-3 min-w-0 pr-2">
               {Icon && (
-                <div className="p-2 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 rounded-xl flex-shrink-0">
+                <div className="p-2 brand-bg-soft brand-text rounded-xl flex-shrink-0">
                   <Icon size={20} />
                 </div>
               )}

@@ -193,7 +193,7 @@ export default function Estoque() {
                   setProdutoParaEditar(null);
                   setMostrarFormulario(true);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow"
+                className="inline-flex items-center gap-2 px-4 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-semibold transition-all shadow-sm hover:shadow"
               >
                 <Plus size={18} />
                 <span>Novo Produto</span>
@@ -375,7 +375,7 @@ export default function Estoque() {
                 <p className="text-rose-500 font-semibold mb-2">{erro}</p>
                 <button
                   onClick={listarProdutos}
-                  className="px-4 py-2 bg-cyan-500 text-white rounded-xl text-xs font-semibold hover:bg-cyan-600 transition-colors"
+                  className="px-4 py-2 brand-bg hover:opacity-85 text-white rounded-xl text-xs font-semibold transition-colors"
                 >
                   Tentar novamente
                 </button>
@@ -628,7 +628,7 @@ export default function Estoque() {
                     handleEditar(produtoDetalhes);
                     setShowDetalhes(false);
                   }}
-                  className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+                  className="px-4 py-2 brand-bg hover:opacity-85 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
                 >
                   <Edit size={15} />
                   Editar Produto
@@ -690,7 +690,7 @@ export default function Estoque() {
           footer={
             <button
               onClick={() => setErrorMessage(null)}
-              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold transition-all"
+              className="px-4 py-2 brand-bg hover:opacity-85 text-white rounded-xl text-xs font-semibold transition-all"
             >
               Entendido
             </button>
@@ -724,7 +724,7 @@ export default function Estoque() {
               </button>
               <button
                 onClick={handleConfirmarSimilaridade}
-                className="px-3.5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-semibold transition-all shadow-sm"
+                className="px-3.5 py-2 brand-bg hover:opacity-85 text-white rounded-xl text-xs font-semibold transition-all shadow-sm"
               >
                 Cadastrar Mesmo Assim
               </button>

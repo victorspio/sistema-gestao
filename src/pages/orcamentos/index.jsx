@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   FileText, 
@@ -246,7 +246,7 @@ export default function OrcamentosPage() {
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total de Propostas</p>
               <h3 className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{stats.total}</h3>
             </div>
-            <div className="p-3 bg-orange-100 dark:bg-orange-950/40 text-orange-600 rounded-xl">
+            <div className="p-3 bg-orange-100 dark:bg-orange-950/40 brand-text rounded-xl">
               <FileText size={22} />
             </div>
           </div>
@@ -293,7 +293,7 @@ export default function OrcamentosPage() {
               placeholder="Buscar por código, cliente, CPF/CNPJ..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
             />
           </div>
 
@@ -301,7 +301,7 @@ export default function OrcamentosPage() {
             <select
               value={filtroStatus}
               onChange={(e) => setFiltroStatus(e.target.value)}
-              className="w-full sm:w-auto px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full sm:w-auto px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
             >
               <option value="todos">Todos os Status</option>
               <option value="aguardando">Aguardando Aprovação</option>
@@ -316,7 +316,7 @@ export default function OrcamentosPage() {
                 setOrcamentoEditar(null);
                 setModalFormAberto(true);
               }}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
             >
               <Plus size={18} />
               Novo Orçamento
@@ -358,7 +358,7 @@ export default function OrcamentosPage() {
                     return (
                       <tr key={orc.id} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
                         <td className="px-5 py-4">
-                          <span className="font-bold text-orange-600 dark:text-orange-400">
+                          <span className="font-bold brand-text">
                             #{orc.codigoOrcamento || '00000'}
                           </span>
                           <p className="text-xs text-slate-400">{dataCriacao.toLocaleDateString('pt-BR')}</p>
@@ -403,7 +403,7 @@ export default function OrcamentosPage() {
                             <button
                               onClick={() => handleBaixarPdf(orc)}
                               disabled={gerandoPdfId === orc.id}
-                              className="p-2 text-slate-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-lg transition-colors"
+                              className="p-2 text-slate-500 hover:brand-text hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-lg transition-colors"
                               title="Baixar Proposta em PDF"
                             >
                               <Download size={17} />
@@ -519,7 +519,7 @@ export default function OrcamentosPage() {
                     required
                     value={dataAgendamento}
                     onChange={(e) => setDataAgendamento(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
                   />
                 </div>
 
@@ -533,7 +533,7 @@ export default function OrcamentosPage() {
                     required
                     value={horarioAgendamento}
                     onChange={(e) => setHorarioAgendamento(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
                   />
                 </div>
               </div>
@@ -547,7 +547,7 @@ export default function OrcamentosPage() {
                   <select
                     value={tecnicoSelecionadoId}
                     onChange={(e) => setTecnicoSelecionadoId(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
                   >
                     <option value="">A definir na triagem</option>
                     {tecnicos.map(t => (
@@ -566,7 +566,7 @@ export default function OrcamentosPage() {
                   <select
                     value={tipoServicoOS}
                     onChange={(e) => setTipoServicoOS(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
                   >
                     <option value="Instalação">Instalação Completa</option>
                     <option value="Manutenção Preventiva">Manutenção Preventiva</option>
@@ -586,7 +586,7 @@ export default function OrcamentosPage() {
                   value={instrucoesOS}
                   onChange={(e) => setInstrucoesOS(e.target.value)}
                   placeholder="Ex: Instalação de kit CFTV 4 câmeras e fechadura digital..."
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] resize-none"
                 />
               </div>
 
@@ -661,7 +661,7 @@ export default function OrcamentosPage() {
                     setSucessoOS(null);
                     navigate('/ordens-servico');
                   }}
-                  className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2"
+                  className="px-5 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2"
                 >
                   <span>Ir para Ordens de Serviço</span>
                   <ArrowRight size={16} />

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import App from './App';
 import './styles/globals.css';
+import './styles/serra-felix-theme.css';
 import { registerServiceWorker } from './utils/serviceWorkerRegistration';
 
 // Previne globalmente que o scroll do mouse altere valores em campos numéricos (type="number")

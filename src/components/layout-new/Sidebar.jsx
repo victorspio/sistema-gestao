@@ -21,17 +21,17 @@ import { useEmpresa } from '../../contexts/EmpresaContext';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Users,           label: 'Clientes', path: '/clientes' },
-  { icon: FileText,        label: 'Orçamentos', path: '/orcamentos' },
-  { icon: Wrench,          label: 'Ordens de Serviço', path: '/ordens-servico' },
-  { icon: ShoppingCart,    label: 'Vendas', path: '/vendas' },
-  { icon: Cpu,             label: 'Equipamentos', path: '/equipamentos' },
-  { icon: Package,         label: 'Estoque & Produtos', path: '/estoque' },
-  { icon: UserCheck,       label: 'Técnicos', path: '/tecnicos' },
-  { icon: ShoppingBag,     label: 'Compras', path: '/compras' },
-  { icon: DollarSign,      label: 'Financeiro', path: '/financeiro' },
-  { icon: BarChart2,       label: 'Relatórios', path: '/relatorios' },
-  { icon: Settings,        label: 'Configurações', path: '/configuracoes' },
+  { icon: Users, label: 'Clientes', path: '/clientes' },
+  { icon: FileText, label: 'Orçamentos', path: '/orcamentos' },
+  { icon: Wrench, label: 'Ordens de Serviço', path: '/ordens-servico' },
+  { icon: ShoppingCart, label: 'Vendas', path: '/vendas' },
+  { icon: Cpu, label: 'Equipamentos', path: '/equipamentos' },
+  { icon: Package, label: 'Estoque & Produtos', path: '/estoque' },
+  { icon: UserCheck, label: 'Técnicos', path: '/tecnicos' },
+  { icon: ShoppingBag, label: 'Compras', path: '/compras' },
+  { icon: DollarSign, label: 'Financeiro', path: '/financeiro' },
+  { icon: BarChart2, label: 'Relatórios', path: '/relatorios' },
+  { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
 
 export default function Sidebar() {
@@ -64,33 +64,32 @@ export default function Sidebar() {
       )}
 
       {/* Sidebar */}
-      <aside 
+      <aside
         style={{ backgroundColor: corSidebar, borderColor: `${corPrimaria}33` }}
-        className={`w-72 sm:w-64 h-screen border-r fixed left-0 top-0 shadow-2xl transition-transform duration-300 ease-in-out z-50 flex flex-col ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        className={`w-72 sm:w-64 h-screen border-r fixed left-0 top-0 shadow-2xl transition-transform duration-300 ease-in-out z-50 flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          }`}
       >
         {/* Logo and Close Button on Mobile */}
-        <div 
+        <div
           style={{ borderColor: `${corPrimaria}25` }}
           className="p-5 border-b flex items-center justify-between flex-shrink-0"
         >
-          <div className="flex items-center gap-3 overflow-hidden">
+          <div className="flex flex-col items-center gap-2 flex-1 overflow-hidden">
             {logoSidebar ? (
-              <div className="h-12 w-auto max-w-[130px] flex items-center justify-center">
+              <div className="w-full flex items-center justify-center">
                 <img
                   src={logoSidebar}
                   alt={nomeEmpresa}
-                  className="max-h-12 max-w-full object-contain"
+                  className="max-h-40 max-w-full object-contain"
                 />
               </div>
             ) : (
               <Logo size="md" />
             )}
-            <div className="overflow-hidden">
-              <p 
+            <div className="text-center overflow-hidden w-full">
+              <p
                 style={{ color: corPrimaria }}
-                className="font-bold tracking-wider uppercase text-xs truncate max-w-[130px]"
+                className="font-bold tracking-wider uppercase text-xs truncate"
                 title={nomeEmpresa}
               >
                 {nomeEmpresa}
@@ -122,31 +121,29 @@ export default function Sidebar() {
                   borderLeftColor: corPrimaria,
                   borderLeftWidth: '4px'
                 } : {}}
-                className={`group flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'shadow-sm font-semibold'
-                    : 'text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10'
-                }`}
+                className={`group flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium transition-all duration-200 ${isActive
+                  ? 'shadow-sm font-semibold'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10'
+                  }`}
                 title={label}
               >
-                <Icon 
-                  size={19} 
+                <Icon
+                  size={19}
                   style={isActive ? { color: corPrimaria } : {}}
-                  className={`transition-colors duration-200 flex-shrink-0 ${
-                    isActive ? '' : 'text-slate-400 group-hover:text-white'
-                  }`}
+                  className={`transition-colors duration-200 flex-shrink-0 ${isActive ? '' : 'text-slate-400 group-hover:text-white'
+                    }`}
                 />
                 <span className="text-sm truncate">{label}</span>
               </Link>
             );
           })}
         </nav>
-        
+
         {/* Footer - Fixed at bottom */}
-        <div 
-          style={{ 
+        <div
+          style={{
             borderColor: `${corPrimaria}25`,
-            backgroundColor: `${corSidebar}E6` 
+            backgroundColor: `${corSidebar}E6`
           }}
           className="flex-shrink-0 p-3.5 border-t text-center"
         >

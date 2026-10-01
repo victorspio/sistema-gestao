@@ -82,7 +82,7 @@ export default function RelatoriosPage() {
   const [loadingGeral, setLoadingGeral] = useState(true);
 
   // Estados dos Filtros
-  const [periodo, setPeriodo] = useState('mes');
+  const [periodo, setPeriodo] = useState('todos');
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [tipoRelatorio, setTipoRelatorio] = useState('todos');
@@ -586,9 +586,8 @@ export default function RelatoriosPage() {
     ];
   }, [dadosFiltrados]);
 
-  // Limpar Filtros
   const handleLimparFiltros = () => {
-    setPeriodo('mes');
+    setPeriodo('todos');
     setDataInicio('');
     setDataFim('');
     setTipoRelatorio('todos');
@@ -619,7 +618,7 @@ export default function RelatoriosPage() {
         {/* =========================================================================
             2. FILTROS AVANÇADOS
         ========================================================================== */}
-        <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 transition-all space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700/60">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
               <Filter size={16} className="text-[#00c8ff]" />
@@ -633,13 +632,13 @@ export default function RelatoriosPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* 1. PERÍODO */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                 Período
               </label>
               <select
                 value={periodo}
                 onChange={(e) => setPeriodo(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-[#00c8ff]"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="hoje">Hoje</option>
                 <option value="ontem">Ontem</option>
@@ -655,13 +654,13 @@ export default function RelatoriosPage() {
 
             {/* 2. TIPO DE RELATÓRIO */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                 Tipo de Relatório
               </label>
               <select
                 value={tipoRelatorio}
                 onChange={(e) => setTipoRelatorio(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-[#00c8ff]"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="todos">Todos os Módulos</option>
                 <option value="ordens_servico">Ordens de Serviço</option>
@@ -674,13 +673,13 @@ export default function RelatoriosPage() {
 
             {/* 3. CLIENTE */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                 Cliente
               </label>
               <select
                 value={clienteFiltro}
                 onChange={(e) => setClienteFiltro(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-[#00c8ff] truncate"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 truncate"
               >
                 <option value="todos">Todos os Clientes</option>
                 {clientes.map(c => (
@@ -693,13 +692,13 @@ export default function RelatoriosPage() {
 
             {/* 4. CATEGORIA */}
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                 Categoria de Produto / Serviço
               </label>
               <select
                 value={categoriaFiltro}
                 onChange={(e) => setCategoriaFiltro(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-[#00c8ff] truncate"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 truncate"
               >
                 <option value="todos">Todas as Categorias</option>
                 {categoriasDisponiveis.map(cat => (
@@ -738,17 +737,18 @@ export default function RelatoriosPage() {
           )}
 
           {/* BOTÕES DE AÇÃO DOS FILTROS */}
-          <div className="flex items-center justify-end gap-2.5 pt-2">
-            <button
-              onClick={handleLimparFiltros}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
-            >
-              <RotateCcw size={14} />
-              Limpar Filtros
-            </button>
-            <div className="px-3 py-1.5 bg-[#00c8ff]/10 text-[#00a3d1] dark:text-[#00c8ff] rounded-xl text-xs font-semibold flex items-center gap-1.5">
-              <Check size={14} />
-              Filtro Aplicado
+          <div className="mt-4 pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700/40">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Exibindo dados para: <strong className="brand-text">{intervaloData.texto}</strong>
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleLimparFiltros}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+              >
+                <RotateCcw size={14} />
+                Limpar
+              </button>
             </div>
           </div>
         </div>
@@ -864,7 +864,7 @@ export default function RelatoriosPage() {
               <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Itens Utilizados</span>
-                  <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 brand-text flex items-center justify-center">
                     <Package size={20} />
                   </div>
                 </div>
@@ -872,7 +872,7 @@ export default function RelatoriosPage() {
                   <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
                     {metricas.totalMateriaisUsados}
                   </h3>
-                  <p className="text-[11px] text-orange-600 dark:text-orange-400 font-medium mt-1">
+                  <p className="text-[11px] brand-text font-medium mt-1">
                     Itens em OS e vendas
                   </p>
                 </div>
@@ -1133,7 +1133,7 @@ export default function RelatoriosPage() {
                           const badge = STATUS_OS_BADGE[os.status] || STATUS_OS_BADGE.aberta;
                           return (
                             <tr key={os.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-750 transition-colors">
-                              <td className="px-3.5 py-3 font-bold text-orange-600 dark:text-orange-400">
+                              <td className="px-3.5 py-3 font-bold brand-text">
                                 #{os.codigoOS || '00000'}
                               </td>
                               <td className="px-3.5 py-3 font-medium text-slate-800 dark:text-slate-200">
@@ -1177,7 +1177,7 @@ export default function RelatoriosPage() {
                     </div>
                     <Link
                       to="/estoque"
-                      className="text-xs font-semibold text-orange-600 hover:underline flex items-center gap-1"
+                      className="text-xs font-semibold brand-text hover:underline flex items-center gap-1"
                     >
                       <span>Ver estoque</span>
                       <ArrowRight size={14} />

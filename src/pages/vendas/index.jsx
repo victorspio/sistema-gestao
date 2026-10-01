@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useVendas } from '../../hooks/useVendas';
 import { useClientes } from '../../hooks/useClientes';
@@ -264,7 +264,7 @@ export default function VendasPage() {
                 <input
                   type="text"
                   placeholder="Buscar por código, cliente ou produto..."
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] focus:border-transparent transition-all duration-200"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -274,7 +274,7 @@ export default function VendasPage() {
               <div className="relative">
                 <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
                 <select
-                  className="pl-12 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none cursor-pointer transition-all duration-200 min-w-[180px]"
+                  className="pl-12 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] focus:border-transparent appearance-none cursor-pointer transition-all duration-200 min-w-[180px]"
                   value={statusFiltro}
                   onChange={(e) => setStatusFiltro(e.target.value)}
                 >
@@ -290,7 +290,7 @@ export default function VendasPage() {
             {/* Botão Nova Venda */}
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+              className="flex items-center gap-2 px-6 py-3 brand-bg hover:opacity-85 text-white font-medium rounded-xl shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)] focus:ring-offset-2"
             >
               <Plus size={20} />
               Nova Venda
@@ -338,7 +338,7 @@ export default function VendasPage() {
             <p className="text-slate-600 dark:text-white mb-4">{error}</p>
             <button 
               onClick={() => listarVendas(debouncedSearchTerm, statusFiltro)}
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+              className="px-4 py-2 brand-bg text-white rounded-lg hover:brand-bg transition-colors"
             >
               Tentar novamente
             </button>
@@ -669,7 +669,7 @@ export default function VendasPage() {
                     setShowForm(true);
                     setShowDetalhes(false);
                   }}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-200"
+                  className="flex items-center justify-center gap-2 px-4 py-2 brand-bg hover:opacity-85 text-white rounded-lg transition-colors duration-200"
                 >
                   <Edit size={16} />
                   Editar Venda

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Wrench, 
   Plus, 
@@ -163,7 +163,7 @@ export default function OrdensServicoPage() {
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total de Ordens</p>
               <h3 className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{stats.total}</h3>
             </div>
-            <div className="p-3 bg-orange-100 dark:bg-orange-950/40 text-orange-600 rounded-xl">
+            <div className="p-3 bg-orange-100 dark:bg-orange-950/40 brand-text rounded-xl">
               <Wrench size={22} />
             </div>
           </div>
@@ -208,7 +208,7 @@ export default function OrdensServicoPage() {
               placeholder="Buscar por OS, cliente, técnico, problema..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
             />
           </div>
 
@@ -216,7 +216,7 @@ export default function OrdensServicoPage() {
             <select
               value={filtroStatus}
               onChange={(e) => setFiltroStatus(e.target.value)}
-              className="w-full sm:w-auto px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full sm:w-auto px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
             >
               <option value="todos">Todos os Status</option>
               <option value="aberta">Aberta</option>
@@ -231,7 +231,7 @@ export default function OrdensServicoPage() {
                 setOsParaEditar(null);
                 setModalFormAberto(true);
               }}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
             >
               <Plus size={18} />
               Nova Ordem de Serviço
@@ -274,7 +274,7 @@ export default function OrdensServicoPage() {
                     return (
                       <tr key={os.id} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
                         <td className="px-5 py-4">
-                          <span className="font-bold text-orange-600 dark:text-orange-400">
+                          <span className="font-bold brand-text">
                             #{os.codigoOS || '00000'}
                           </span>
                           <p className="text-xs text-slate-400">{os.dataAgendamento || os.dataAbertura || '-'}</p>
@@ -327,7 +327,7 @@ export default function OrdensServicoPage() {
                             <button
                               onClick={() => handleBaixarPdf(os)}
                               disabled={gerandoPdfId === os.id}
-                              className="p-1.5 text-slate-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-lg transition-colors"
+                              className="p-1.5 text-slate-500 hover:brand-text hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-lg transition-colors"
                               title="Baixar Ordem de Serviço em PDF"
                             >
                               <Download size={16} />

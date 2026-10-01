@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 // Componente de Skeleton para tabela de clientes
 export function ClientesSkeleton() {
@@ -129,7 +129,7 @@ export function EmptyState({
       {actionText && onAction && (
         <button
           onClick={onAction}
-          className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+          className="px-6 py-3 brand-bg hover:opacity-85 text-white font-medium rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
         >
           {actionText}
         </button>

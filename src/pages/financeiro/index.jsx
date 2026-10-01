@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import {
   DollarSign,
   TrendingUp,
@@ -100,7 +100,7 @@ export default function FinanceiroPage() {
   const { ordensServico = [], listarOrdensServico } = useOrdensServico();
 
   // Estados dos Filtros
-  const [periodo, setPeriodo] = useState('mes'); // 'hoje', '7dias', '30dias', 'mes', 'mes_anterior', 'ano', 'todos', 'personalizado'
+  const [periodo, setPeriodo] = useState('todos'); // 'hoje', '7dias', '30dias', 'mes', 'mes_anterior', 'ano', 'todos', 'personalizado'
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('todos'); // 'todos', 'receitas', 'despesas', 'contas_receber', 'contas_pagar'
@@ -706,7 +706,7 @@ export default function FinanceiroPage() {
 
   // Handlers para Ações e Modais
   const handleLimparFiltros = () => {
-    setPeriodo('mes');
+    setPeriodo('todos');
     setDataInicio('');
     setDataFim('');
     setTipoFiltro('todos');
@@ -1096,7 +1096,7 @@ export default function FinanceiroPage() {
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform ${
                     estatisticas.saldo >= 0
                       ? 'bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400'
-                      : 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400'
+                      : 'bg-orange-50 dark:bg-orange-950/40 brand-text'
                   }`}>
                     <DollarSign size={20} />
                   </div>
@@ -1104,13 +1104,13 @@ export default function FinanceiroPage() {
                 <div className={`text-2xl font-bold tracking-tight ${
                   estatisticas.saldo >= 0
                     ? 'text-cyan-600 dark:text-cyan-400'
-                    : 'text-orange-600 dark:text-orange-400'
+                    : 'brand-text'
                 }`}>
                   R$ {formatCurrency(Math.abs(estatisticas.saldo))}
                 </div>
                 <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
                   <span className={`font-semibold ${
-                    estatisticas.saldo >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-600 dark:text-orange-400'
+                    estatisticas.saldo >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'brand-text'
                   }`}>
                     {estatisticas.saldo >= 0 ? 'Superavitário (+)' : 'Deficitário (-)'}
                   </span>
@@ -1505,7 +1505,7 @@ export default function FinanceiroPage() {
                         Saldo do Período
                       </span>
                       <span className={`text-xl font-bold ${
-                        estatisticas.saldo >= 0 ? 'text-cyan-600 dark:text-cyan-400' : 'text-orange-600 dark:text-orange-400'
+                        estatisticas.saldo >= 0 ? 'text-cyan-600 dark:text-cyan-400' : 'brand-text'
                       }`}>
                         R$ {formatCurrency(Math.abs(estatisticas.saldo))}
                       </span>
@@ -2570,7 +2570,7 @@ export default function FinanceiroPage() {
                   <div className="border-t border-slate-200 dark:border-slate-700 pt-2 flex justify-between text-sm">
                     <span className="font-bold text-slate-900 dark:text-slate-100">Resultado Líquido:</span>
                     <span className={`font-bold ${
-                      estatisticas.saldo >= 0 ? 'text-cyan-600 dark:text-cyan-400' : 'text-orange-600 dark:text-orange-400'
+                      estatisticas.saldo >= 0 ? 'text-cyan-600 dark:text-cyan-400' : 'brand-text'
                     }`}>
                       R$ {formatCurrency(Math.abs(estatisticas.saldo))} ({estatisticas.saldo >= 0 ? 'Positivo' : 'Negativo'})
                     </span>

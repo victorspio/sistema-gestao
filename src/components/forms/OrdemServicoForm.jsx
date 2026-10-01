@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Trash2, User, Wrench, Package, Calendar, Clock, DollarSign, CheckCircle } from 'lucide-react';
 import { useClientes } from '../../hooks/useClientes';
 import { useTecnicos } from '../../hooks/useTecnicos';
@@ -315,7 +315,7 @@ export default function OrdemServicoForm({ onSubmit, initialData, onCancel }) {
           <button
             type="button"
             onClick={handleAddMaterial}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white brand-bg hover:opacity-85 rounded-lg shadow-sm"
           >
             <Plus size={15} />
             Adicionar Material
@@ -391,7 +391,7 @@ export default function OrdemServicoForm({ onSubmit, initialData, onCancel }) {
                       type="checkbox"
                       checked={mat.instalarNoCliente}
                       onChange={(e) => handleMaterialField(idx, 'instalarNoCliente', e.target.checked)}
-                      className="rounded text-orange-500 focus:ring-orange-500"
+                      className="rounded text-orange-500 focus:ring-[var(--brand-primary,#00c8ff)]"
                     />
                     Registrar nos Equipamentos Instalados do Cliente (com garantia)
                   </label>
@@ -434,7 +434,7 @@ export default function OrdemServicoForm({ onSubmit, initialData, onCancel }) {
 
         <div className="text-right">
           <p className="text-xs text-slate-500 dark:text-slate-400">Total da OS</p>
-          <p className="text-xl font-bold text-orange-600 dark:text-orange-400">
+          <p className="text-xl font-bold brand-text">
             R$ {formatCurrency(totalOS)}
           </p>
         </div>
@@ -451,7 +451,7 @@ export default function OrdemServicoForm({ onSubmit, initialData, onCancel }) {
         </button>
         <button
           type="submit"
-          className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-md transition-all"
+          className="px-6 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-semibold shadow-md transition-all"
         >
           {initialData ? 'Atualizar OS' : 'Criar Ordem de Serviço'}
         </button>

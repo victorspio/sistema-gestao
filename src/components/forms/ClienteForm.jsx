@@ -65,7 +65,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           onClick={() => handleTipoChange('PF')}
           className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
             tipoPessoa === 'PF'
-              ? 'bg-cyan-500 text-white shadow-sm'
+              ? 'brand-bg text-white shadow-sm'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -76,7 +76,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
           onClick={() => handleTipoChange('PJ')}
           className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
             tipoPessoa === 'PJ'
-              ? 'bg-cyan-500 text-white shadow-sm'
+              ? 'brand-bg text-white shadow-sm'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -344,7 +344,7 @@ export default function ClienteForm({ onSubmit, initialData, isEditing }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 active:bg-cyan-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
+          className="px-6 py-3 brand-bg hover:opacity-85 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
         >
           {isSubmitting ? 'Salvando...' : isEditing ? 'Atualizar Cliente' : 'Cadastrar Cliente'}
         </button>

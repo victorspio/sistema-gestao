@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Trash2, Shield, Wrench, DollarSign, Calendar, Clock, User, Package } from 'lucide-react';
 import { useClientes } from '../../hooks/useClientes';
 import { useEstoque } from '../../hooks/useEstoque';
@@ -206,7 +206,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
             value={clienteId}
             onChange={(e) => setClienteId(e.target.value)}
             required
-            className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#00c8ff)]"
           >
             <option value="">-- Selecione o Cliente --</option>
             {clientes.map(cli => (
@@ -235,7 +235,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
           <button
             type="button"
             onClick={handleAddProduto}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-sm transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white brand-bg hover:opacity-85 rounded-lg shadow-sm transition-all"
           >
             <Plus size={16} />
             Adicionar Equipamento
@@ -529,7 +529,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
             </>
           )}
         </div>
-        <div className="text-xl font-bold text-orange-600 dark:text-orange-400 mt-2 sm:mt-0">
+        <div className="text-xl font-bold brand-text mt-2 sm:mt-0">
           Total: R$ {formatCurrency(totalGeral)}
         </div>
       </div>
@@ -545,7 +545,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
         </button>
         <button
           type="submit"
-          className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-all shadow-md"
+          className="px-6 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-medium transition-all shadow-md"
         >
           {initialData ? 'Atualizar Orçamento' : 'Salvar Orçamento'}
         </button>

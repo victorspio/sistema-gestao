@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   collection, 
   addDoc, 
@@ -29,12 +29,17 @@ export function useClientes() {
   const [loading, setLoading] = useState(false);
   const [savingLoading, setSavingLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [cache, setCache] = useState(new Map());
-  const [ultimaBusca, setUltimaBusca] = useState('');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Cache em ref para não causar re-renders ao atualizar (igual ao useCompras)
+  const cacheRef = useRef({ data: null, timestamp: null });
 
   const col = (name) => collection(db, name);
   const colDoc = (name, id) => doc(db, name, id);
+
+  const invalidarCacheInterno = useCallback(() => {
+    cacheRef.current = { data: null, timestamp: null };
+  }, []);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -44,44 +49,54 @@ export function useClientes() {
     return () => { window.removeEventListener('online', handleOnline); window.removeEventListener('offline', handleOffline); };
   }, []);
 
-  async function listarClientes(searchTerm = '') {
-    const cacheKey = `clientes_${searchTerm || 'all'}`;
-    if (cache.has(cacheKey)) {
-      const dadosCache = cache.get(cacheKey);
-      if (Date.now() - dadosCache.timestamp < 120000) {
-        setClientes(dadosCache.data);
-        setLoading(false);
-        return dadosCache.data;
-      }
-    }
-
-    if (!isOnline) {
-      if (cache.has(cacheKey)) {
-        setClientes(cache.get(cacheKey).data);
-        setError('Modo offline - dados podem não estar atualizados');
-        return cache.get(cacheKey).data;
-      }
-      setError('Sem conexão com a internet e nenhum dado em cache');
-      return [];
-    }
-
-    if (cache.has(cacheKey)) setClientes(cache.get(cacheKey).data);
-
+  // Busca todos os clientes UMA VEZ e filtra localmente — igual ao padrão do useCompras
+  const listarClientes = useCallback(async (searchTerm = '') => {
     try {
+      const cache = cacheRef.current;
+
+      // Se há cache válido (< 2 min), filtra localmente sem ir ao Firebase
+      if (cache.data && cache.timestamp && Date.now() - cache.timestamp < 120000) {
+        let clientesData = cache.data;
+        if (searchTerm && searchTerm.trim()) {
+          const s = searchTerm.toLowerCase().trim();
+          clientesData = clientesData.filter(c =>
+            c.nome?.toLowerCase().includes(s) ||
+            c.razaoSocial?.toLowerCase().includes(s) ||
+            c.apelido?.toLowerCase().includes(s) ||
+            c.email?.toLowerCase().includes(s) ||
+            c.telefone?.includes(searchTerm) ||
+            c.whatsapp?.includes(searchTerm) ||
+            c.cpf?.includes(searchTerm) ||
+            c.cidade?.toLowerCase().includes(s) ||
+            c.bairro?.toLowerCase().includes(s)
+          );
+        }
+        setClientes(clientesData);
+        return clientesData;
+      }
+
+      if (!isOnline) {
+        setError('Sem conexão com a internet');
+        return [];
+      }
+
       setLoading(true);
       setError(null);
-      setUltimaBusca(searchTerm);
 
-      const snapshot = await getDocs(query(col('clientes'), orderBy('nome'), limit(100)));
-      let clientesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Busca todos do Firebase e salva no cache bruto
+      const snapshot = await getDocs(query(col('clientes'), orderBy('nome'), limit(200)));
+      const todosDados = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      cacheRef.current = { data: todosDados, timestamp: Date.now() };
 
+      // Filtra localmente
+      let clientesData = todosDados;
       if (searchTerm && searchTerm.trim()) {
         const s = searchTerm.toLowerCase().trim();
-        clientesData = clientesData.filter(c =>
-          c.nome?.toLowerCase().includes(s) || 
+        clientesData = todosDados.filter(c =>
+          c.nome?.toLowerCase().includes(s) ||
           c.razaoSocial?.toLowerCase().includes(s) ||
           c.apelido?.toLowerCase().includes(s) ||
-          c.email?.toLowerCase().includes(s) || 
+          c.email?.toLowerCase().includes(s) ||
           c.telefone?.includes(searchTerm) ||
           c.whatsapp?.includes(searchTerm) ||
           c.cpf?.includes(searchTerm) ||
@@ -91,8 +106,6 @@ export function useClientes() {
       }
 
       setClientes(clientesData);
-      cache.set(cacheKey, { data: clientesData, timestamp: Date.now() });
-      setCache(new Map(cache));
       return clientesData;
     } catch (err) {
       console.error('Erro em listarClientes:', err);
@@ -101,7 +114,7 @@ export function useClientes() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [isOnline]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function adicionarCliente(dados) {
     try {
@@ -221,15 +234,13 @@ export function useClientes() {
     }
   }
 
-  function invalidarCache() { setCache(new Map()); }
-
   return {
     clientes, loading, savingLoading, error, isOnline,
     listarClientes,
-    adicionarCliente: async (dados) => { const r = await adicionarCliente(dados); invalidarCache(); return r; },
-    atualizarCliente: async (id, dados) => { const r = await atualizarCliente(id, dados); invalidarCache(); return r; },
-    deletarCliente: async (id) => { const r = await deletarCliente(id); invalidarCache(); return r; },
+    adicionarCliente: async (dados) => { const r = await adicionarCliente(dados); invalidarCacheInterno(); return r; },
+    atualizarCliente: async (id, dados) => { const r = await atualizarCliente(id, dados); invalidarCacheInterno(); return r; },
+    deletarCliente: async (id) => { const r = await deletarCliente(id); invalidarCacheInterno(); return r; },
     obterHistoricoCliente: buscarHistoricoCompras,
-    cache, invalidarCache
+    invalidarCache: invalidarCacheInterno
   };
 }

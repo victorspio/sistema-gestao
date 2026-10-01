@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+﻿import React, { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   FileText, 
@@ -205,7 +205,7 @@ export default function DashboardPage() {
                   R$ {formatCurrency(metricas.totalReceber)}
                 </h3>
               </div>
-              <div className="p-3 bg-orange-100 dark:bg-orange-950/40 text-orange-600 rounded-xl group-hover:scale-110 transition-transform">
+              <div className="p-3 bg-orange-100 dark:bg-orange-950/40 brand-text rounded-xl group-hover:scale-110 transition-transform">
                 <DollarSign size={22} />
               </div>
             </div>
@@ -231,7 +231,7 @@ export default function DashboardPage() {
                 </h3>
                 <p className="text-xs text-slate-500">Chamados técnicos abertos e agendados para a equipe.</p>
               </div>
-              <Link to="/ordens-servico" className="text-xs text-orange-600 dark:text-orange-400 font-semibold hover:underline">
+              <Link to="/ordens-servico" className="text-xs brand-text font-semibold hover:underline">
                 Ver todas ({ordensServico.length})
               </Link>
             </div>
@@ -249,7 +249,7 @@ export default function DashboardPage() {
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs text-orange-600 dark:text-orange-400">
+                        <span className="font-bold text-xs brand-text">
                           #{os.codigoOS}
                         </span>
                         <span className="text-xs font-semibold text-slate-800 dark:text-white">
@@ -273,7 +273,7 @@ export default function DashboardPage() {
                       </span>
                       <Link
                         to="/ordens-servico"
-                        className="block mt-1 text-[11px] text-orange-600 font-medium hover:underline"
+                        className="block mt-1 text-[11px] brand-text font-medium hover:underline"
                       >
                         Abrir
                       </Link>
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                 </h3>
                 <p className="text-xs text-slate-500">Equipamentos para compra ou reposição.</p>
               </div>
-              <Link to="/estoque" className="text-xs text-orange-600 dark:text-orange-400 font-semibold hover:underline">
+              <Link to="/estoque" className="text-xs brand-text font-semibold hover:underline">
                 Estoque
               </Link>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Wrench, Plus, Edit, Trash2, Phone, Mail, CheckCircle, XCircle } from 'lucide-react';
 import PageLayout from '../../components/layout-new/PageLayout';
 import Modal from '../../components/modals/Modal';
@@ -82,7 +82,7 @@ export default function TecnicosPage() {
           </div>
           <button
             onClick={handleAbrirNovo}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 brand-bg hover:opacity-85 text-white rounded-xl text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
           >
             <Plus size={18} />
             Novo Técnico
@@ -110,7 +110,7 @@ export default function TecnicosPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="font-bold text-slate-900 dark:text-white text-base">{tec.nome}</h3>
-                      <span className="inline-block mt-1 text-xs px-2.5 py-0.5 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 font-medium rounded-full">
+                      <span className="inline-block mt-1 text-xs px-2.5 py-0.5 bg-orange-50 dark:bg-orange-950/30 brand-text font-medium rounded-full">
                         {tec.especialidade}
                       </span>
                     </div>
@@ -257,7 +257,7 @@ export default function TecnicosPage() {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold shadow-md"
+                className="px-5 py-2 brand-bg hover:opacity-85 text-white rounded-lg text-sm font-semibold shadow-md"
               >
                 {tecnicoEditar ? 'Atualizar' : 'Cadastrar'}
               </button>
