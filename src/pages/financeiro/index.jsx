@@ -454,12 +454,37 @@ export default function FinanceiroPage() {
       }
     });
 
-    const lista = Array.from(mapaDias.values()).sort((a, b) => a.timestamp - b.timestamp);
+    let lista = Array.from(mapaDias.values()).sort((a, b) => a.timestamp - b.timestamp);
 
-    // Se estiver vazio, fornecer estrutura inicial neutra
-    if (lista.length === 0) {
-      const hojeStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-      return [{ data: hojeStr, entradas: 0, saidas: 0, saldo: 0 }];
+    // Salvaguarda: Recharts AreaChart necessita de ao menos 2 pontos para traçar a área/linha contínua
+    if (lista.length === 1) {
+      const p = lista[0];
+      const dataOriginal = new Date(p.timestamp || Date.now());
+
+      const anterior = new Date(dataOriginal);
+      anterior.setDate(anterior.getDate() - 1);
+      const chaveAnt = anterior.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+      const posterior = new Date(dataOriginal);
+      posterior.setDate(posterior.getDate() + 1);
+      const chavePos = posterior.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+      lista = [
+        { data: chaveAnt, timestamp: anterior.getTime(), entradas: 0, saidas: 0, saldo: 0 },
+        p,
+        { data: chavePos, timestamp: posterior.getTime(), entradas: 0, saidas: 0, saldo: 0 }
+      ];
+    } else if (lista.length === 0) {
+      const hoje = new Date();
+      const ontem = new Date(hoje);
+      ontem.setDate(ontem.getDate() - 1);
+      const ontemStr = ontem.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      const hojeStr = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+      return [
+        { data: ontemStr, timestamp: ontem.getTime(), entradas: 0, saidas: 0, saldo: 0 },
+        { data: hojeStr, timestamp: hoje.getTime(), entradas: 0, saidas: 0, saldo: 0 }
+      ];
     }
 
     return lista;

@@ -10,7 +10,8 @@ import Modal from '../../components/modals/Modal';
 import { Plus, Search, Edit, Trash2, FileText, CheckCircle, Clock, XCircle, Filter, Users, Eye, Printer, Download } from 'lucide-react';
 import { VendasSkeleton, LoadingSpinner, EmptyState } from '../../components/ui/LoadingComponents';
 import { formatCurrency, formatQuantity } from '../../utils/formatters';
-import { gerarComprovanteVenda, imprimirComprovanteVenda, EMPRESA_CONFIGS } from '../../utils/gerarComprovanteVenda';
+import { gerarComprovanteVenda, imprimirComprovanteVenda } from '../../utils/gerarComprovanteVenda';
+import { useEmpresa } from '../../contexts/EmpresaContext';
 
 export default function VendasPage() {
   const location = useLocation();
@@ -28,7 +29,8 @@ export default function VendasPage() {
   const { vendas, loading, error, listarVendas, adicionarVenda, atualizarVenda, deletarVenda } = useVendas();
   const { clientes, listarClientes, invalidarCache } = useClientes();
   const { produtos, listarProdutos } = useEstoque();
-  const empresaConfig = EMPRESA_CONFIGS.app;
+  const { empresa } = useEmpresa();
+  const empresaConfig = empresa;
   
   // Debounce para busca
   const debouncedSearchTerm = useDebounce(searchTerm, 500);

@@ -23,6 +23,7 @@ import { useOrdensServico } from '../../hooks/useOrdensServico';
 import { gerarPdfOrdemServico } from '../../utils/pdfOrdemServico';
 import { formatCurrency } from '../../utils/formatters';
 import { LoadingSpinner } from '../../components/ui/LoadingComponents';
+import { useEmpresa } from '../../contexts/EmpresaContext';
 
 const STATUS_OS = {
   aberta:              { label: 'Aberta',              bg: 'bg-blue-100 dark:bg-blue-900/30',     text: 'text-blue-700 dark:text-blue-300' },
@@ -34,6 +35,7 @@ const STATUS_OS = {
 };
 
 export default function OrdensServicoPage() {
+  const { empresa } = useEmpresa();
   const { 
     ordensServico, 
     loading, 
@@ -142,7 +144,7 @@ export default function OrdensServicoPage() {
   const handleBaixarPdf = async (os) => {
     try {
       setGerandoPdfId(os.id);
-      await gerarPdfOrdemServico(os);
+      await gerarPdfOrdemServico(os, empresa);
     } catch (err) {
       console.error('Erro ao gerar PDF da OS:', err);
       alert('Erro ao gerar PDF da Ordem de Serviço: ' + err.message);

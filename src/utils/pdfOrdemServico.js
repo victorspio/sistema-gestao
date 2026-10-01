@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatCurrency } from './formatters';
 import { precarregarImagensPDF } from './pdfImageHelper';
+import { hexToRgb } from './colorHelpers';
 
 const STATUS_LABELS = {
   aberta: 'ABERTA',
@@ -24,8 +25,12 @@ export async function gerarPdfOrdemServico(os, dadosEmpresa = {}) {
   const margin = 14;
 
   // ── CABEÇALHO ─────────────────────────────────────────────────────────────
-  // Pré-carrega imagens
-  const { mascote, logo } = await precarregarImagensPDF();
+  // Pré-carrega imagens (suporta logo personalizada da empresa)
+  const { mascote, logo } = await precarregarImagensPDF(dadosEmpresa.logoSidebar);
+
+  // Cores dinâmicas da empresa
+  const rgbPrimaria = hexToRgb(dadosEmpresa.corPrimaria || '#00c8ff', { r: 0, g: 200, b: 255 });
+  const rgbSidebar = hexToRgb(dadosEmpresa.corSidebar || '#060d30', { r: 6, g: 13, b: 48 });
 
   // Dados da empresa
   const nomeEmpresa = dadosEmpresa.nome || 'Zeu Tech';
@@ -37,12 +42,12 @@ export async function gerarPdfOrdemServico(os, dadosEmpresa = {}) {
   // ── CABEÇALHO 3 COLUNAS ───────────────────────────────────────────────────
   const headerH = 42;
 
-  // Fundo azul escuro
-  doc.setFillColor(6, 13, 48);
+  // Fundo com a cor personalizada da empresa (antigo azul escuro)
+  doc.setFillColor(rgbSidebar.r, rgbSidebar.g, rgbSidebar.b);
   doc.rect(0, 0, pageWidth, headerH, 'F');
 
-  // Faixa ciano inferior
-  doc.setFillColor(0, 200, 255);
+  // Faixa inferior com a cor primária da empresa (antigo ciano)
+  doc.setFillColor(rgbPrimaria.r, rgbPrimaria.g, rgbPrimaria.b);
   doc.rect(0, headerH - 1.5, pageWidth, 1.5, 'F');
 
   // ── ESQUERDA: título + dados ──────────────────────────────────────────────────
@@ -327,7 +332,7 @@ export async function gerarPdfOrdemServico(os, dadosEmpresa = {}) {
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
   doc.text(
-    `Ordem de Serviço gerada em ${new Date().toLocaleString('pt-BR')} • Zeu-Tech - Sistema de Gestão`,
+    `Ordem de Serviço gerada em ${new Date().toLocaleString('pt-BR')} • ${nomeEmpresa} - Sistema de Gestão`,
     pageWidth / 2,
     pageHeight - 6,
     { align: 'center' }

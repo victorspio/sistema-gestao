@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatCurrency } from './formatters';
 import { precarregarImagensPDF, prepararImagemProdutoParaPDF } from './pdfImageHelper';
+import { hexToRgb } from './colorHelpers';
 
 export async function gerarPdfOrcamento(orcamento, dadosEmpresa = {}) {
   const doc = new jsPDF({
@@ -14,9 +15,9 @@ export async function gerarPdfOrcamento(orcamento, dadosEmpresa = {}) {
   const pageHeight = doc.internal.pageSize.height;
   const margin = 14;
 
-  // Pré-carrega imagens do cabeçalho e pré-processa produtos (proporção sem achatamento + fundo branco para PNGs transparentes)
+  // Pré-carrega imagens do cabeçalho (suporta logo personalizada da empresa)
   const [{ mascote, logo }, produtos] = await Promise.all([
-    precarregarImagensPDF(),
+    precarregarImagensPDF(dadosEmpresa.logoSidebar),
     Promise.all(
       (orcamento.produtos || []).map(async (item) => {
         if (!item.imagemBase64) return item;
@@ -26,7 +27,11 @@ export async function gerarPdfOrcamento(orcamento, dadosEmpresa = {}) {
     )
   ]);
 
-  // Dados da empresa com fallbacks da Zeu-Tech
+  // Cores dinâmicas da empresa
+  const rgbPrimaria = hexToRgb(dadosEmpresa.corPrimaria || '#00c8ff', { r: 0, g: 200, b: 255 });
+  const rgbSidebar = hexToRgb(dadosEmpresa.corSidebar || '#060d30', { r: 6, g: 13, b: 48 });
+
+  // Dados da empresa com fallbacks
   const nomeEmpresa = dadosEmpresa.nome || 'Zeu Tech';
   const cnpj = dadosEmpresa.cnpj || '66.819.439/0001-59';
   const endereco = dadosEmpresa.endereco || 'Jeronimo Batista, N: 4516';
@@ -36,12 +41,12 @@ export async function gerarPdfOrcamento(orcamento, dadosEmpresa = {}) {
   // ── CABEÇALHO 3 COLUNAS ───────────────────────────────────────────────────
   const headerH = 42; // altura do cabeçalho em mm
 
-  // Fundo azul escuro
-  doc.setFillColor(6, 13, 48);
+  // Fundo com a cor personalizada da empresa (antigo azul escuro)
+  doc.setFillColor(rgbSidebar.r, rgbSidebar.g, rgbSidebar.b);
   doc.rect(0, 0, pageWidth, headerH, 'F');
 
-  // Faixa ciano inferior
-  doc.setFillColor(0, 200, 255);
+  // Faixa inferior com a cor primária da empresa (antigo ciano)
+  doc.setFillColor(rgbPrimaria.r, rgbPrimaria.g, rgbPrimaria.b);
   doc.rect(0, headerH - 1.5, pageWidth, 1.5, 'F');
 
   // ── COLUNA ESQUERDA: título + dados da empresa ────────────────────────────
@@ -457,7 +462,7 @@ export async function gerarPdfOrcamento(orcamento, dadosEmpresa = {}) {
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
   doc.text(
-    `Documento gerado eletronicamente em ${new Date().toLocaleString('pt-BR')} • Zeu-Tech - Sistema de Gestão`,
+    `Documento gerado eletronicamente em ${new Date().toLocaleString('pt-BR')} • ${nomeEmpresa} - Sistema de Gestão`,
     pageWidth / 2,
     pageHeight - 6,
     { align: 'center' }

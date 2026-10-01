@@ -24,8 +24,10 @@ import { useClientes } from '../../hooks/useClientes';
 import { useFinanceiro } from '../../hooks/useFinanceiro';
 import { formatCurrency } from '../../utils/formatters';
 import AgendaOS from '../../components/dashboard/AgendaOS';
+import { useEmpresa } from '../../contexts/EmpresaContext';
 
 export default function DashboardPage() {
+  const { empresa } = useEmpresa();
   const { orcamentos, listarOrcamentos } = useOrcamentos();
   const { ordensServico, listarOrdensServico } = useOrdensServico();
   const { equipamentos, listarEquipamentos } = useEquipamentos();
@@ -77,18 +79,28 @@ export default function DashboardPage() {
     };
   }, [orcamentos, ordensServico, equipamentos, produtos, clientes, contasReceber]);
 
+  const corPrimaria = empresa?.corPrimaria || '#00c8ff';
+  const corSidebar = empresa?.corSidebar || '#060d30';
+  const nomeEmpresa = empresa?.nome || 'Zeu-Tech';
+
   return (
-    <PageLayout title="Painel de Controle - Zeu-Tech">
+    <PageLayout title={`Painel de Controle - ${nomeEmpresa}`}>
       <div className="space-y-8">
         {/* BOAS-VINDAS E ATALHOS RÁPIDOS */}
-        <div className="bg-gradient-to-r from-[#060d30] via-[#0057b8] to-[#00c8ff] rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-lg border border-[#00c8ff]/20">
+        <div 
+          style={{
+            background: `linear-gradient(135deg, ${corSidebar} 0%, #0057b8 50%, ${corPrimaria} 100%)`,
+            borderColor: `${corPrimaria}33`
+          }}
+          className="rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-lg border"
+        >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
             <div>
               <span className="text-[10px] sm:text-xs font-bold tracking-wider uppercase bg-white/20 px-2.5 py-1 rounded-full">
                 Gestão Operacional & Comercial
               </span>
               <h2 className="text-xl sm:text-3xl font-extrabold mt-2.5 sm:mt-3">
-                Zeu-Tech
+                {nomeEmpresa}
               </h2>
               <p className="text-white/90 text-xs sm:text-sm mt-1 max-w-xl">
                 Controle integral de orçamentos, ordens de serviço, técnicos de campo, equipamentos instalados e faturamento.

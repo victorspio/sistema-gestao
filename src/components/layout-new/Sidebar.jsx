@@ -11,27 +11,38 @@ import {
   ShoppingBag,
   DollarSign,
   BarChart2,
+  ShoppingCart,
+  Settings,
   Menu,
   X
 } from 'lucide-react';
 import Logo from '../ui/Logo';
+import { useEmpresa } from '../../contexts/EmpresaContext';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Users,           label: 'Clientes', path: '/clientes' },
   { icon: FileText,        label: 'Orçamentos', path: '/orcamentos' },
   { icon: Wrench,          label: 'Ordens de Serviço', path: '/ordens-servico' },
+  { icon: ShoppingCart,    label: 'Vendas', path: '/vendas' },
   { icon: Cpu,             label: 'Equipamentos', path: '/equipamentos' },
   { icon: Package,         label: 'Estoque & Produtos', path: '/estoque' },
   { icon: UserCheck,       label: 'Técnicos', path: '/tecnicos' },
   { icon: ShoppingBag,     label: 'Compras', path: '/compras' },
   { icon: DollarSign,      label: 'Financeiro', path: '/financeiro' },
   { icon: BarChart2,       label: 'Relatórios', path: '/relatorios' },
+  { icon: Settings,        label: 'Configurações', path: '/configuracoes' },
 ];
 
 export default function Sidebar() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { empresa } = useEmpresa();
+
+  const corPrimaria = empresa?.corPrimaria || '#00c8ff';
+  const corSidebar = empresa?.corSidebar || '#060d30';
+  const nomeEmpresa = empresa?.nome || 'Zeu-Tech';
+  const logoSidebar = empresa?.logoSidebar;
 
   return (
     <>
@@ -53,16 +64,39 @@ export default function Sidebar() {
       )}
 
       {/* Sidebar */}
-      <aside className={`w-72 sm:w-64 h-screen bg-[#060d30] border-r border-[#00c8ff]/20 fixed left-0 top-0 shadow-2xl transition-transform duration-300 ease-in-out z-50 flex flex-col ${
-        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
+      <aside 
+        style={{ backgroundColor: corSidebar, borderColor: `${corPrimaria}33` }}
+        className={`w-72 sm:w-64 h-screen border-r fixed left-0 top-0 shadow-2xl transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
         {/* Logo and Close Button on Mobile */}
-        <div className="p-5 border-b border-[#00c8ff]/20 flex items-center justify-between flex-shrink-0">
-          <div>
-            <Logo size="md" />
-            <p className="font-bold text-[#00c8ff] mt-1 tracking-wider uppercase text-[11px]">
-              Zeu-Tech
-            </p>
+        <div 
+          style={{ borderColor: `${corPrimaria}25` }}
+          className="p-5 border-b flex items-center justify-between flex-shrink-0"
+        >
+          <div className="flex items-center gap-3 overflow-hidden">
+            {logoSidebar ? (
+              <div className="h-12 w-auto max-w-[130px] flex items-center justify-center">
+                <img
+                  src={logoSidebar}
+                  alt={nomeEmpresa}
+                  className="max-h-12 max-w-full object-contain"
+                />
+              </div>
+            ) : (
+              <Logo size="md" />
+            )}
+            <div className="overflow-hidden">
+              <p 
+                style={{ color: corPrimaria }}
+                className="font-bold tracking-wider uppercase text-xs truncate max-w-[130px]"
+                title={nomeEmpresa}
+              >
+                {nomeEmpresa}
+              </p>
+              <span className="text-[10px] text-slate-400 block tracking-normal">Sistema de Gestão</span>
+            </div>
           </div>
           <button
             onClick={() => setIsOpen(false)}
@@ -82,17 +116,24 @@ export default function Sidebar() {
                 key={path}
                 to={path}
                 onClick={() => setIsOpen(false)}
-                className={`group flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium transition-all duration-200 ${
+                style={isActive ? {
+                  backgroundColor: `${corPrimaria}20`,
+                  color: corPrimaria,
+                  borderLeftColor: corPrimaria,
+                  borderLeftWidth: '4px'
+                } : {}}
+                className={`group flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-[#00c8ff]/15 text-[#00c8ff] border-l-4 border-[#00c8ff] shadow-sm font-semibold'
+                    ? 'shadow-sm font-semibold'
                     : 'text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10'
                 }`}
                 title={label}
               >
                 <Icon 
-                  size={20} 
+                  size={19} 
+                  style={isActive ? { color: corPrimaria } : {}}
                   className={`transition-colors duration-200 flex-shrink-0 ${
-                    isActive ? 'text-[#00c8ff]' : 'text-slate-400 group-hover:text-[#00c8ff]'
+                    isActive ? '' : 'text-slate-400 group-hover:text-white'
                   }`}
                 />
                 <span className="text-sm truncate">{label}</span>
@@ -102,8 +143,16 @@ export default function Sidebar() {
         </nav>
         
         {/* Footer - Fixed at bottom */}
-        <div className="flex-shrink-0 p-3.5 border-t border-[#00c8ff]/20 bg-[#060d30]/90 text-center">
-          <span className="text-[11px] text-slate-500">v1.0.0 &bull; Zeu-Tech Gestão</span>
+        <div 
+          style={{ 
+            borderColor: `${corPrimaria}25`,
+            backgroundColor: `${corSidebar}E6` 
+          }}
+          className="flex-shrink-0 p-3.5 border-t text-center"
+        >
+          <span className="text-[11px] text-slate-400 truncate block">
+            v1.0.0 &bull; {nomeEmpresa} Gestão
+          </span>
         </div>
       </aside>
     </>

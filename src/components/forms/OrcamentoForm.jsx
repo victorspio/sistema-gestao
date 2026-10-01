@@ -297,6 +297,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
                     min="0.01"
                     value={item.quantidade}
                     onChange={(e) => handleItemProdutoField(index, 'quantidade', e.target.value)}
+                    onWheel={(e) => e.target.blur()}
                     className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-white text-center"
                   />
                 </div>
@@ -311,6 +312,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
                     step="0.01"
                     value={item.valorUnitario}
                     onChange={(e) => handleItemProdutoField(index, 'valorUnitario', e.target.value)}
+                    onWheel={(e) => e.target.blur()}
                     className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-white text-right"
                   />
                 </div>
@@ -387,6 +389,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
                   min="1"
                   value={serv.quantidade}
                   onChange={(e) => handleItemServicoField(index, 'quantidade', e.target.value)}
+                  onWheel={(e) => e.target.blur()}
                   className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-white text-center"
                 />
               </div>
@@ -400,6 +403,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
                   step="0.01"
                   value={serv.valorUnitario}
                   onChange={(e) => handleItemServicoField(index, 'valorUnitario', e.target.value)}
+                  onWheel={(e) => e.target.blur()}
                   className="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-white text-right"
                 />
               </div>
@@ -434,6 +438,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
               min="1"
               value={validadeDias}
               onChange={(e) => setValidadeDias(e.target.value)}
+              onWheel={(e) => e.target.blur()}
               className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white"
             />
           </div>
@@ -461,6 +466,7 @@ export default function OrcamentoForm({ onSubmit, initialData, onCancel }) {
               min="0"
               value={desconto}
               onChange={(e) => setDesconto(e.target.value)}
+              onWheel={(e) => e.target.blur()}
               className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-white"
             />
           </div>

@@ -28,6 +28,7 @@ import { useTecnicos } from '../../hooks/useTecnicos';
 import { gerarPdfOrcamento } from '../../utils/pdfOrcamento';
 import { formatCurrency } from '../../utils/formatters';
 import { LoadingSpinner } from '../../components/ui/LoadingComponents';
+import { useEmpresa } from '../../contexts/EmpresaContext';
 
 const STATUS_CONFIG = {
   aguardando: { label: 'Aguardando', bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400' },
@@ -40,6 +41,7 @@ const STATUS_CONFIG = {
 
 export default function OrcamentosPage() {
   const navigate = useNavigate();
+  const { empresa } = useEmpresa();
   const { 
     orcamentos, 
     loading, 
@@ -225,7 +227,7 @@ export default function OrcamentosPage() {
   const handleBaixarPdf = async (orcamento) => {
     try {
       setGerandoPdfId(orcamento.id);
-      await gerarPdfOrcamento(orcamento);
+      await gerarPdfOrcamento(orcamento, empresa);
     } catch (err) {
       console.error('Erro ao gerar PDF:', err);
       alert('Erro ao gerar PDF: ' + err.message);

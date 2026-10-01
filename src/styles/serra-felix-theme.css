@@ -1,22 +1,26 @@
 /* Variáveis CSS para a identidade visual da Zeu-Tech */
 :root {
-  /* Cores principais da Zeu-Tech — Ciano Elétrico */
+  /* Variáveis dinâmicas da empresa (com fallback) */
+  --brand-primary: #00c8ff;
+  --brand-sidebar: #060d30;
+
+  /* Cores principais dinâmicas da empresa */
   --zt-cyan-50:  #e0f7ff;
   --zt-cyan-100: #b3edff;
   --zt-cyan-200: #80e2ff;
   --zt-cyan-300: #4dd6ff;
   --zt-cyan-400: #26ccff;
-  --zt-cyan-500: #00c8ff; /* Ciano principal */
+  --zt-cyan-500: var(--brand-primary, #00c8ff); /* Cor primária dinâmica */
   --zt-cyan-600: #00a3d1;
   --zt-cyan-700: #007fa4;
   --zt-cyan-800: #005c77;
   --zt-cyan-900: #003a4a;
 
   /* Azuis de fundo / estrutura */
-  --zt-dark:      #060d30;
+  --zt-dark:      var(--brand-sidebar, #060d30); /* Fundo dinâmico da sidebar */
   --zt-navy:      #0d1f4d;
   --zt-blue:      #0057b8;
-  --zt-cyan-glow: #00e5ff;
+  --zt-cyan-glow: var(--brand-primary, #00c8ff);
 
   /* Tons de cinza (mantidos) */
   --sf-gray-50:  #f8fafc;

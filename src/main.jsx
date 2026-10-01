@@ -6,6 +6,21 @@ import App from './App';
 import './styles/globals.css';
 import { registerServiceWorker } from './utils/serviceWorkerRegistration';
 
+// Previne globalmente que o scroll do mouse altere valores em campos numéricos (type="number")
+document.addEventListener(
+  'wheel',
+  (event) => {
+    if (
+      event.target instanceof HTMLElement &&
+      event.target.tagName === 'INPUT' &&
+      event.target.type === 'number'
+    ) {
+      event.target.blur();
+    }
+  },
+  { capture: true, passive: true }
+);
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>

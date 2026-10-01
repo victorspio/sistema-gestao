@@ -18,11 +18,15 @@ export const EMPRESA_CONFIGS = {
 };
 
 /**
- * Converte imagem local para base64 para embutir no HTML
+ * Converte imagem local ou URL para base64 para embutir no HTML
  */
-async function getLogoBase64(logoPath = '/logo.png') {
+async function getLogoBase64(logoSrc = '/logo.png') {
+  if (!logoSrc) return null;
+  if (typeof logoSrc === 'string' && logoSrc.startsWith('data:image/')) {
+    return logoSrc; // Já é Base64
+  }
   try {
-    const response = await fetch(logoPath);
+    const response = await fetch(logoSrc);
     const blob = await response.blob();
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -38,13 +42,25 @@ async function getLogoBase64(logoPath = '/logo.png') {
 /**
  * Gera o HTML do comprovante com dados dinâmicos
  */
-async function gerarHTMLComprovante(venda, cliente, produtos = [], empresaConfig = EMPRESA_CONFIGS.app) {
-  const cfg = { ...EMPRESA_CONFIGS.app, ...empresaConfig };
+async function gerarHTMLComprovante(venda, cliente, produtos = [], empresaConfig = null) {
+  const cfg = {
+    nome: empresaConfig?.nome || 'Zeu-Tech',
+    logoPath: empresaConfig?.logoSidebar || '/logo.png',
+    logoAltText: empresaConfig?.nome || 'Logo da Empresa',
+    telefone: empresaConfig?.telefone || '',
+    whatsapp: empresaConfig?.whatsapp || '',
+    endereco: empresaConfig?.endereco || '',
+    cidade: empresaConfig?.cidade || '',
+    cnpj: empresaConfig?.cnpj || '',
+    corPrimaria: empresaConfig?.corPrimaria || '#00c8ff',
+    ...empresaConfig
+  };
+
   const logoBase64 = await getLogoBase64(cfg.logoPath);
 
   const logoHTML = logoBase64
     ? `<img src="${logoBase64}" alt="${cfg.logoAltText}" style="max-width:100%;max-height:100%;object-fit:contain;" />`
-    : `<div style="font-size:22px;font-weight:900;color:#FF6B00;line-height:1.1;font-family:Arial,sans-serif;">${cfg.logoAltText}</div>`;
+    : `<div style="font-size:22px;font-weight:900;color:${cfg.corPrimaria};line-height:1.1;font-family:Arial,sans-serif;">${cfg.nome}</div>`;
 
   // Data/hora — suporte a Firestore Timestamp, ISO string e Date
   let dataVendaObj;

@@ -409,81 +409,93 @@ export default function RelatoriosPage() {
       .sort((a, b) => (parseFloat(a.quantidade) || 0) - (parseFloat(b.quantidade) || 0));
   }, [produtos]);
 
-  // GRÁFICO 1: EVOLUÇÃO TEMPORAL (Receita vs Despesas ao longo do tempo)
+  // GRÁFICO 1: EVOLUÇÃO TEMPORAL (Apenas dias com movimentação, idêntico à seção Financeiro)
   const dadosGraficoEvolucao = useMemo(() => {
-    const mapaDias = {};
+    const mapaDias = new Map();
 
-    // Inicializar pontos
-    const { inicio, fim } = intervaloData;
-    const diffDias = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24));
+    const registrar = (dt, receita = 0, despesa = 0, servico = 0) => {
+      if (!dt) return;
+      const chave = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      if (!mapaDias.has(chave)) {
+        mapaDias.set(chave, {
+          label: chave,
+          timestamp: dt.getTime(),
+          Receita: 0,
+          Despesas: 0,
+          Servicos: 0
+        });
+      }
+      const entry = mapaDias.get(chave);
+      entry.Receita += receita;
+      entry.Despesas += despesa;
+      entry.Servicos += servico;
+    };
 
-    // Agrupa por dia se o período for até 60 dias, senão por mês
-    const agruparPorMes = diffDias > 60;
-
-    // Preenche com as OS
+    // 1. Ordens de Serviço
     dadosFiltrados.ordensServico.forEach(os => {
       const dt = extrairData(os);
-      if (!dt) return;
-      const chave = agruparPorMes
-        ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`
-        : `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}`;
-
-      if (!mapaDias[chave]) mapaDias[chave] = { label: chave, Receita: 0, Despesas: 0, Servicos: 0 };
       if (os.status === 'concluida' || os.financeiroLancado) {
-        const val = parseFloat(os.valorTotal) || 0;
-        mapaDias[chave].Receita += val;
-        mapaDias[chave].Servicos += parseFloat(os.valorMaoDeObra) || val;
+        const valTotal = parseFloat(os.valorTotal) || 0;
+        const valMaoObra = parseFloat(os.valorMaoDeObra) || valTotal;
+        registrar(dt, valTotal, 0, valMaoObra);
       }
     });
 
-    // Preenche com as Vendas Balcão
+    // 2. Vendas Balcão
     dadosFiltrados.vendas.forEach(v => {
       const dt = extrairData(v);
-      if (!dt) return;
-      const chave = agruparPorMes
-        ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`
-        : `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}`;
-
-      if (!mapaDias[chave]) mapaDias[chave] = { label: chave, Receita: 0, Despesas: 0, Servicos: 0 };
-      mapaDias[chave].Receita += parseFloat(v.valorTotal) || 0;
+      registrar(dt, parseFloat(v.valorTotal) || 0, 0, 0);
     });
 
-    // Preenche com Compras e Despesas
+    // 3. Compras de Estoque
     dadosFiltrados.compras.forEach(c => {
       const dt = extrairData(c);
-      if (!dt) return;
-      const chave = agruparPorMes
-        ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`
-        : `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}`;
-
-      if (!mapaDias[chave]) mapaDias[chave] = { label: chave, Receita: 0, Despesas: 0, Servicos: 0 };
-      mapaDias[chave].Despesas += parseFloat(c.valorTotal) || 0;
+      registrar(dt, 0, parseFloat(c.valorTotal) || 0, 0);
     });
 
+    // 4. Contas a Pagar Pagas
     dadosFiltrados.contasPagar.forEach(cp => {
       if (cp.status !== 'paga' && cp.status !== 'pago') return;
       const dt = extrairData(cp);
-      if (!dt) return;
-      const chave = agruparPorMes
-        ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`
-        : `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}`;
-
-      if (!mapaDias[chave]) mapaDias[chave] = { label: chave, Receita: 0, Despesas: 0, Servicos: 0 };
-      mapaDias[chave].Despesas += parseFloat(cp.valorPago || cp.valor) || 0;
+      registrar(dt, 0, parseFloat(cp.valorPago || cp.valor) || 0, 0);
     });
 
-    const lista = Object.values(mapaDias);
+    let lista = Array.from(mapaDias.values()).sort((a, b) => a.timestamp - b.timestamp);
 
-    // Se estiver vazio, adiciona ponto padrão do período
-    if (lista.length === 0) {
+    // Se houver apenas 1 dia com movimentação (ex: 28/09), fornece a margem anterior (27/09) e posterior (29/09) com 0
+    // Isso cria a curva suave perfeita e idêntica ao gráfico do financeiro
+    if (lista.length === 1) {
+      const p = lista[0];
+      const dataOriginal = new Date(p.timestamp || Date.now());
+
+      const anterior = new Date(dataOriginal);
+      anterior.setDate(anterior.getDate() - 1);
+      const chaveAnt = anterior.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+      const posterior = new Date(dataOriginal);
+      posterior.setDate(posterior.getDate() + 1);
+      const chavePos = posterior.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+      lista = [
+        { label: chaveAnt, timestamp: anterior.getTime(), Receita: 0, Despesas: 0, Servicos: 0 },
+        p,
+        { label: chavePos, timestamp: posterior.getTime(), Receita: 0, Despesas: 0, Servicos: 0 }
+      ];
+    } else if (lista.length === 0) {
+      const hoje = new Date();
+      const ontem = new Date(hoje);
+      ontem.setDate(ontem.getDate() - 1);
+      const ontemStr = ontem.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      const hojeStr = hoje.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
       return [
-        { label: 'Início', Receita: 0, Despesas: 0, Servicos: 0 },
-        { label: 'Hoje', Receita: 0, Despesas: 0, Servicos: 0 }
+        { label: ontemStr, timestamp: ontem.getTime(), Receita: 0, Despesas: 0, Servicos: 0 },
+        { label: hojeStr, timestamp: hoje.getTime(), Receita: 0, Despesas: 0, Servicos: 0 }
       ];
     }
 
     return lista;
-  }, [dadosFiltrados, intervaloData]);
+  }, [dadosFiltrados]);
 
   // GRÁFICO 2: DISTRIBUIÇÃO POR CATEGORIA
   const dadosGraficoCategorias = useMemo(() => {
@@ -898,14 +910,14 @@ export default function RelatoriosPage() {
 
                 <div className="h-72 w-full pt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={dadosGraficoEvolucao} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <AreaChart data={dadosGraficoEvolucao} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <defs>
                         <linearGradient id="gradReceita" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
                           <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="gradDespesa" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.25} />
+                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
                           <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="gradServico" x1="0" y1="0" x2="0" y2="1">
@@ -913,9 +925,10 @@ export default function RelatoriosPage() {
                           <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.15} />
-                      <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                      <XAxis dataKey="label" stroke="#94a3b8" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                       <YAxis
+                        stroke="#94a3b8"
                         tick={{ fontSize: 11, fill: '#94a3b8' }}
                         axisLine={false}
                         tickLine={false}
@@ -925,15 +938,41 @@ export default function RelatoriosPage() {
                         formatter={(value, name) => [`R$ ${formatCurrency(value)}`, name]}
                         contentStyle={{
                           backgroundColor: '#0f172a',
-                          borderColor: '#334155',
+                          border: 'none',
                           borderRadius: '12px',
                           color: '#fff',
-                          fontSize: '12px'
+                          fontSize: '12px',
+                          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)'
                         }}
                       />
-                      <Area type="monotone" dataKey="Receita" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#gradReceita)" />
-                      <Area type="monotone" dataKey="Despesas" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#gradDespesa)" />
-                      <Area type="monotone" dataKey="Servicos" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="4 4" fillOpacity={1} fill="url(#gradServico)" />
+                      <Area 
+                        type="monotone" 
+                        dataKey="Receita" 
+                        name="Receita"
+                        stroke="#10b981" 
+                        strokeWidth={2} 
+                        fillOpacity={1} 
+                        fill="url(#gradReceita)" 
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="Despesas" 
+                        name="Despesas"
+                        stroke="#ef4444" 
+                        strokeWidth={2} 
+                        fillOpacity={1} 
+                        fill="url(#gradDespesa)" 
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="Servicos" 
+                        name="Serviços"
+                        stroke="#8b5cf6" 
+                        strokeWidth={1.5} 
+                        strokeDasharray="4 4" 
+                        fillOpacity={1} 
+                        fill="url(#gradServico)" 
+                      />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>

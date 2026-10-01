@@ -19,13 +19,31 @@ export async function getImageBase64(url) {
 }
 
 /**
- * Pré-carrega todas as imagens do cabeçalho PDF de uma vez
+ * Pré-carrega imagens do cabeçalho PDF (suporta logo personalizada)
  */
-export async function precarregarImagensPDF() {
-  const [mascote, logo] = await Promise.all([
+export async function precarregarImagensPDF(customLogo = null) {
+  let logoPromise;
+
+  if (customLogo) {
+    if (typeof customLogo === 'string' && customLogo.startsWith('data:image/')) {
+      // Já é Base64
+      logoPromise = Promise.resolve(customLogo);
+    } else {
+      // URL de imagem externa ou local
+      logoPromise = getImageBase64(customLogo);
+    }
+  } else {
+    logoPromise = getImageBase64('/logo.png');
+  }
+
+  const [mascote, logoCarregada] = await Promise.all([
     getImageBase64('/mascote.png'),
-    getImageBase64('/logo.png'),
+    logoPromise
   ]);
+
+  // Se a logo customizada falhar, faz fallback para a logo padrão
+  const logo = logoCarregada || (customLogo ? await getImageBase64('/logo.png') : null);
+
   return { mascote, logo };
 }
 
