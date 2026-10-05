@@ -16,12 +16,15 @@ import {
   ArrowUpDown,
   X,
   RotateCcw,
-  FileSpreadsheet
+  FileSpreadsheet,
+  ShoppingCart
 } from 'lucide-react';
 import { useEstoque } from '../../hooks/useEstoque';
+import { useCompras } from '../../hooks/useCompras';
 import ProdutoForm from '../../components/forms/ProdutoForm';
 import PageLayout from '../../components/layout-new/PageLayout';
 import Modal from '../../components/modals/Modal';
+import ModalEntradaEstoque from '../../components/modals/ModalEntradaEstoque';
 import { LoadingSpinner, ProdutosSkeleton } from '../../components/ui/LoadingComponents';
 import { formatCurrency, formatQuantity } from '../../utils/formatters';
 import ImportarNFe from '../../components/ui/ImportarNFe';
@@ -33,15 +36,25 @@ export default function Estoque() {
     error: erro,
     adicionarProduto,
     atualizarProduto,
+    ajustarEstoque,
     deletarProduto,
     listarProdutos
   } = useEstoque();
+
+  const { adicionarCompra } = useCompras();
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [produtoParaEditar, setProdutoParaEditar] = useState(null);
   const [produtoParaExcluir, setProdutoParaExcluir] = useState(null);
   const [produtoDetalhes, setProdutoDetalhes] = useState(null);
   const [showDetalhes, setShowDetalhes] = useState(false);
+  const [modalEntrada, setModalEntrada] = useState({
+    aberto: false,
+    produto: null,
+    dadosPendente: null,
+    quantidadeInicial: 1,
+    ignorarSimilaridade: false
+  });
   const [busca, setBusca] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroEstoque, setFiltroEstoque] = useState('todos');
@@ -96,16 +109,34 @@ export default function Estoque() {
 
   const handleSubmit = async (dados, ignorarSimilaridade = false) => {
     try {
-      let resultado;
       if (produtoParaEditar) {
-        resultado = await atualizarProduto(produtoParaEditar.id, dados, ignorarSimilaridade);
-      } else {
-        resultado = await adicionarProduto(dados, ignorarSimilaridade);
-      }
+        const qtdAnterior = parseFloat(produtoParaEditar.quantidade) || 0;
+        const qtdNova = parseFloat(dados.quantidade) || 0;
 
-      if (resultado && resultado.similar) {
-        setSimilarWarning({ dados, id: produtoParaEditar?.id || null, produtoSimilar: resultado.produtoSimilar });
-        return;
+        // Se o usuário aumentou a quantidade ao editar o produto, abre o modal de nova compra no financeiro!
+        if (qtdNova > qtdAnterior) {
+          const diferenca = qtdNova - qtdAnterior;
+          setModalEntrada({
+            aberto: true,
+            produto: produtoParaEditar,
+            dadosPendente: dados,
+            quantidadeInicial: diferenca,
+            ignorarSimilaridade
+          });
+          return;
+        }
+
+        const resultado = await atualizarProduto(produtoParaEditar.id, dados, ignorarSimilaridade);
+        if (resultado && resultado.similar) {
+          setSimilarWarning({ dados, id: produtoParaEditar?.id || null, produtoSimilar: resultado.produtoSimilar });
+          return;
+        }
+      } else {
+        const resultado = await adicionarProduto(dados, ignorarSimilaridade);
+        if (resultado && resultado.similar) {
+          setSimilarWarning({ dados, id: null, produtoSimilar: resultado.produtoSimilar });
+          return;
+        }
       }
 
       setMostrarFormulario(false);
@@ -116,6 +147,72 @@ export default function Estoque() {
         console.error('Erro ao salvar produto:', error);
       }
       setErrorMessage(error.message);
+    }
+  };
+
+  const handleConfirmarEntradaEstoque = async (info) => {
+    try {
+      const {
+        produto,
+        quantidadeAdicionar,
+        precoCompra,
+        precoVenda,
+        fornecedor,
+        dataCompra,
+        formaPagamento,
+        lancarFinanceiro,
+        observacoes,
+        dadosFormularioPendente
+      } = info;
+
+      const qtdAdd = parseFloat(quantidadeAdicionar) || 0;
+      const pCompra = parseFloat(precoCompra) || 0;
+      const pVenda = parseFloat(precoVenda) || 0;
+
+      if (lancarFinanceiro) {
+        await adicionarCompra({
+          fornecedor: fornecedor || 'Não informado',
+          dataCompra: dataCompra || new Date(),
+          valorTotal: qtdAdd * pCompra,
+          formaPagamento: formaPagamento || 'a_vista',
+          observacoes: observacoes || `Entrada de estoque - ${produto.nome} (+${qtdAdd} ${produto.unidade || 'un'})`,
+          itens: [{
+            produtoId: produto.id,
+            nomeProduto: produto.nome,
+            categoria: produto.categoria || 'Geral',
+            quantidade: qtdAdd,
+            valorCompra: pCompra,
+            valorUnitario: pCompra,
+            valorVenda: pVenda,
+            unidade: produto.unidade || 'un'
+          }]
+        });
+
+        if (dadosFormularioPendente) {
+          const dadosCompletos = {
+            ...dadosFormularioPendente,
+            quantidade: (parseFloat(produto.quantidade) || 0) + qtdAdd,
+            precoCompra: pCompra,
+            precoVenda: pVenda,
+            fornecedor: fornecedor || dadosFormularioPendente.fornecedor || ''
+          };
+          await atualizarProduto(produto.id, dadosCompletos, modalEntrada.ignorarSimilaridade);
+        }
+      } else {
+        if (dadosFormularioPendente) {
+          await atualizarProduto(produto.id, dadosFormularioPendente, modalEntrada.ignorarSimilaridade);
+        } else {
+          await ajustarEstoque(produto.id, (parseFloat(produto.quantidade) || 0) + qtdAdd, 'Ajuste manual de estoque');
+        }
+      }
+
+      setModalEntrada({ aberto: false, produto: null, dadosPendente: null, quantidadeInicial: 1, ignorarSimilaridade: false });
+      setMostrarFormulario(false);
+      setProdutoParaEditar(null);
+      await listarProdutos();
+    } catch (err) {
+      console.error('Erro ao processar entrada de estoque:', err);
+      alert('Erro ao registrar entrada de estoque: ' + err.message);
     }
   };
 
@@ -744,6 +841,19 @@ export default function Estoque() {
             </p>
           </div>
         </Modal>
+
+        {/* ========================================================================= */}
+        {/* MODAL DE ENTRADA DE ESTOQUE / NOVA COMPRA NO FINANCEIRO */}
+        {/* ========================================================================= */}
+        <ModalEntradaEstoque
+          isOpen={modalEntrada.aberto}
+          onClose={() => setModalEntrada({ aberto: false, produto: null, dadosPendente: null, quantidadeInicial: 1, ignorarSimilaridade: false })}
+          produtoInicial={modalEntrada.produto}
+          produtos={produtos}
+          dadosFormularioPendente={modalEntrada.dadosPendente}
+          quantidadeInicial={modalEntrada.quantidadeInicial}
+          onConfirmar={handleConfirmarEntradaEstoque}
+        />
       </div>
     </PageLayout>
   );

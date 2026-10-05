@@ -351,12 +351,6 @@ export default function RelatoriosPage() {
     });
 
     // 7. Situação Financeira (Global / Contas a Receber e Pagar)
-    const hojeStr = new Date().toISOString().split('T')[0];
-
-    const receberVencidas = contasReceber
-      .filter(c => c.status === 'pendente' && c.dataVencimento && (c.dataVencimento < hojeStr || (c.dataVencimento.toDate && c.dataVencimento.toDate() < new Date())))
-      .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
-
     const receberPendentes = contasReceber
       .filter(c => c.status === 'pendente')
       .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
@@ -364,18 +358,6 @@ export default function RelatoriosPage() {
     const receberPagas = contasReceber
       .filter(c => c.status === 'pago')
       .reduce((acc, c) => acc + (parseFloat(c.valorRecebido || c.valor) || 0), 0);
-
-    const pagarVencidas = contasPagar
-      .filter(c => c.status === 'pendente' && c.dataVencimento && c.dataVencimento < hojeStr)
-      .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
-
-    const pagarPendentes = contasPagar
-      .filter(c => c.status === 'pendente')
-      .reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
-
-    const pagarPagas = contasPagar
-      .filter(c => c.status === 'paga' || c.status === 'pago')
-      .reduce((acc, c) => acc + (parseFloat(c.valorPago || c.valor) || 0), 0);
 
     return {
       receitaTotal,
@@ -393,14 +375,10 @@ export default function RelatoriosPage() {
       osEmAndamento,
       totalMateriaisUsados,
       valorMateriaisUsados,
-      receberVencidas,
       receberPendentes,
-      receberPagas,
-      pagarVencidas,
-      pagarPendentes,
-      pagarPagas
+      receberPagas
     };
-  }, [dadosFiltrados, contasReceber, contasPagar]);
+  }, [dadosFiltrados, contasReceber]);
 
   // PRODUTOS COM ESTOQUE BAIXO (Dados Reais)
   const produtosEstoqueBaixo = useMemo(() => {
@@ -1243,7 +1221,7 @@ export default function RelatoriosPage() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {/* BLOCO: CONTAS A RECEBER */}
                 <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 space-y-3">
                   <div className="flex items-center justify-between">
@@ -1255,18 +1233,11 @@ export default function RelatoriosPage() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-                    <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900/50">
-                      <p className="text-[10px] text-red-500 font-semibold uppercase">Vencidas</p>
-                      <p className="text-sm font-bold text-red-600 mt-0.5">
-                        R$ {formatCurrency(metricas.receberVencidas)}
-                      </p>
-                    </div>
-
+                  <div className="grid grid-cols-2 gap-3 pt-1 text-center">
                     <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-amber-200 dark:border-amber-900/50">
-                      <p className="text-[10px] text-amber-600 font-semibold uppercase">A Vencer</p>
+                      <p className="text-[10px] text-amber-600 font-semibold uppercase">Pendentes</p>
                       <p className="text-sm font-bold text-amber-600 mt-0.5">
-                        R$ {formatCurrency(metricas.receberPendentes - metricas.receberVencidas)}
+                        R$ {formatCurrency(metricas.receberPendentes)}
                       </p>
                     </div>
 
@@ -1274,41 +1245,6 @@ export default function RelatoriosPage() {
                       <p className="text-[10px] text-emerald-600 font-semibold uppercase">Recebidas</p>
                       <p className="text-sm font-bold text-emerald-600 mt-0.5">
                         R$ {formatCurrency(metricas.receberPagas)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* BLOCO: CONTAS A PAGAR */}
-                <div className="p-4 rounded-2xl bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-red-800 dark:text-red-300 uppercase tracking-wider">
-                      Contas a Pagar
-                    </span>
-                    <span className="text-xs font-bold text-red-600">
-                      Total: R$ {formatCurrency(metricas.pagarPendentes + metricas.pagarPagas)}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-                    <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900/50">
-                      <p className="text-[10px] text-red-500 font-semibold uppercase">Vencidas</p>
-                      <p className="text-sm font-bold text-red-600 mt-0.5">
-                        R$ {formatCurrency(metricas.pagarVencidas)}
-                      </p>
-                    </div>
-
-                    <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-amber-200 dark:border-amber-900/50">
-                      <p className="text-[10px] text-amber-600 font-semibold uppercase">A Vencer</p>
-                      <p className="text-sm font-bold text-amber-600 mt-0.5">
-                        R$ {formatCurrency(metricas.pagarPendentes - metricas.pagarVencidas)}
-                      </p>
-                    </div>
-
-                    <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-emerald-900/50">
-                      <p className="text-[10px] text-emerald-600 font-semibold uppercase">Pagas</p>
-                      <p className="text-sm font-bold text-emerald-600 mt-0.5">
-                        R$ {formatCurrency(metricas.pagarPagas)}
                       </p>
                     </div>
                   </div>

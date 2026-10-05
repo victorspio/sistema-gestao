@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   DollarSign,
   TrendingUp,
@@ -7,13 +7,11 @@ import {
   ShoppingBag,
   Calendar,
   ArrowUpRight,
-  ArrowDownRight,
   Filter,
   Plus,
   Search,
   X,
   ChevronRight,
-  AlertCircle,
   CheckCircle2,
   Clock,
   PieChart as PieChartIcon,
@@ -25,8 +23,9 @@ import {
   Wallet,
   Receipt,
   CreditCard,
-  Building2,
-  User
+  User,
+  Boxes,
+  Package
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -47,6 +46,7 @@ import { useFinanceiro } from '../../hooks/useFinanceiro';
 import { useVendas } from '../../hooks/useVendas';
 import { useCompras } from '../../hooks/useCompras';
 import { useOrdensServico } from '../../hooks/useOrdensServico';
+import { useEstoque } from '../../hooks/useEstoque';
 import { formatCurrency, formatarData, formatReal } from '../../utils/formatters';
 import { LoadingSpinner } from '../../components/ui/LoadingComponents';
 
@@ -98,6 +98,11 @@ export default function FinanceiroPage() {
   const { vendas = [], loading: loadingVendas, listarVendas } = useVendas();
   const { compras = [], loading: loadingCompras, listarCompras } = useCompras();
   const { ordensServico = [], listarOrdensServico } = useOrdensServico();
+  const { produtos = [], loading: loadingEstoque, listarProdutos } = useEstoque();
+
+  // Estados de busca e filtro da tabela de patrimônio em estoque
+  const [buscaEstoque, setBuscaEstoque] = useState('');
+  const [filtroEstoqueFinanceiro, setFiltroEstoqueFinanceiro] = useState('com_estoque');
 
   // Estados dos Filtros
   const [periodo, setPeriodo] = useState('todos'); // 'hoje', '7dias', '30dias', 'mes', 'mes_anterior', 'ano', 'todos', 'personalizado'
@@ -108,7 +113,7 @@ export default function FinanceiroPage() {
   const [termoBusca, setTermoBusca] = useState('');
 
   // Modais e Controles de Ação
-  const [modalAberto, setModalAberto] = useState(null); // 'recebido', 'aReceber', 'despesas', 'saldo', 'novaContaPagar', 'novaContaReceber', 'baixaConta', 'todasVencer', 'todasReceber', 'todasPagar'
+  const [modalAberto, setModalAberto] = useState(null); // 'recebido', 'aReceber', 'despesas', 'saldo', 'novaContaPagar', 'novaContaReceber', 'baixaConta', 'todasReceber', 'patrimonioEstoque'
   const [itemBaixa, setItemBaixa] = useState(null); // { conta, tipo: 'receber' | 'pagar' }
   const [abaMovimentacoes, setAbaMovimentacoes] = useState('receitas'); // 'receitas' | 'despesas'
 
@@ -147,6 +152,7 @@ export default function FinanceiroPage() {
     listarContasReceber();
     listarContasPagar();
     listarFluxoCaixa();
+    listarProdutos();
     if (typeof listarOrdensServico === 'function') {
       listarOrdensServico();
     }
@@ -302,11 +308,9 @@ export default function FinanceiroPage() {
     const totalVendasFiado = vendasFiado.reduce((acc, v) => acc + (parseFloat(v.valorTotal) || 0), 0);
     totalAReceber += totalVendasFiado;
 
-    // Vencidas vs A Vencer (Receber)
+    // Vencidas (Receber)
     let receberVencidas = 0;
     let qtdReceberVencidas = 0;
-    let receberAVencer = 0;
-    let qtdReceberAVencer = 0;
 
     contasAReceberPendentes.forEach(c => {
       const dtVenc = parseData(c.dataVencimento);
@@ -314,9 +318,6 @@ export default function FinanceiroPage() {
       if (dtVenc && dtVenc < hoje) {
         receberVencidas += val;
         qtdReceberVencidas += 1;
-      } else {
-        receberAVencer += val;
-        qtdReceberAVencer += 1;
       }
     });
 
@@ -331,11 +332,9 @@ export default function FinanceiroPage() {
     // Total a Pagar
     const totalAPagar = contasPagarPendentes.reduce((acc, cp) => acc + (parseFloat(cp.valor) || 0), 0);
 
-    // Vencidas vs A Vencer (Pagar)
+    // Vencidas (Pagar)
     let pagarVencidas = 0;
     let qtdPagarVencidas = 0;
-    let pagarAVencer = 0;
-    let qtdPagarAVencer = 0;
 
     contasPagarPendentes.forEach(cp => {
       const dtVenc = parseData(cp.dataVencimento);
@@ -343,9 +342,6 @@ export default function FinanceiroPage() {
       if (dtVenc && dtVenc < hoje) {
         pagarVencidas += val;
         qtdPagarVencidas += 1;
-      } else {
-        pagarAVencer += val;
-        qtdPagarAVencer += 1;
       }
     });
 
@@ -374,13 +370,9 @@ export default function FinanceiroPage() {
       totalAReceber,
       receberVencidas,
       qtdReceberVencidas,
-      receberAVencer,
-      qtdReceberAVencer,
       totalAPagar,
       pagarVencidas,
       qtdPagarVencidas,
-      pagarAVencer,
-      qtdPagarAVencer,
       totalReceitas,
       totalDespesas,
       saldo,
@@ -397,6 +389,73 @@ export default function FinanceiroPage() {
       qtdContasPagarPagas: contasPagarPagas.length
     };
   }, [dadosFiltrados]);
+
+  // Indicadores de Patrimônio em Estoque Físico (Itens em casa / depósito)
+  const metricasEstoque = useMemo(() => {
+    let valorCustoTotal = 0;
+    let valorVendaTotal = 0;
+    let totalUnidades = 0;
+    let produtosComEstoque = 0;
+    let produtosZerados = 0;
+
+    produtos.forEach(p => {
+      const qtd = parseFloat(p.quantidade) || 0;
+      const cUnit = parseFloat(p.precoCompra ?? p.valorCompra ?? p.valorCusto) || 0;
+      const vUnit = parseFloat(p.precoVenda ?? p.valorVenda) || 0;
+
+      if (qtd > 0) {
+        produtosComEstoque++;
+        totalUnidades += qtd;
+        valorCustoTotal += qtd * cUnit;
+        valorVendaTotal += qtd * vUnit;
+      } else {
+        produtosZerados++;
+      }
+    });
+
+    const lucroPotencial = valorVendaTotal - valorCustoTotal;
+    const margemPotencial = valorVendaTotal > 0 ? ((lucroPotencial / valorVendaTotal) * 100).toFixed(1) : 0;
+
+    return {
+      valorCustoTotal,
+      valorVendaTotal,
+      lucroPotencial,
+      margemPotencial,
+      totalUnidades,
+      produtosComEstoque,
+      produtosZerados,
+      totalCadastrados: produtos.length
+    };
+  }, [produtos]);
+
+  // Lista filtrada e ordenada de produtos para a tabela detalhada do Financeiro
+  const produtosEstoqueFiltrados = useMemo(() => {
+    return produtos.filter(p => {
+      const termo = buscaEstoque.trim().toLowerCase();
+      const matchBusca = !termo ||
+        p.nome?.toLowerCase().includes(termo) ||
+        p.categoria?.toLowerCase().includes(termo) ||
+        p.marca?.toLowerCase().includes(termo) ||
+        p.modelo?.toLowerCase().includes(termo) ||
+        p.codigo?.toLowerCase().includes(termo);
+
+      const qtd = parseFloat(p.quantidade) || 0;
+      let matchFiltro = true;
+      if (filtroEstoqueFinanceiro === 'com_estoque') {
+        matchFiltro = qtd > 0;
+      } else if (filtroEstoqueFinanceiro === 'zerados') {
+        matchFiltro = qtd === 0;
+      }
+
+      return matchBusca && matchFiltro;
+    }).sort((a, b) => {
+      const cUnitA = parseFloat(a.precoCompra ?? a.valorCompra ?? a.valorCusto) || 0;
+      const cUnitB = parseFloat(b.precoCompra ?? b.valorCompra ?? b.valorCusto) || 0;
+      const totalA = (parseFloat(a.quantidade) || 0) * cUnitA;
+      const totalB = (parseFloat(b.quantidade) || 0) * cUnitB;
+      return totalB - totalA;
+    });
+  }, [produtos, buscaEstoque, filtroEstoqueFinanceiro]);
 
   // 1. Dados do Gráfico de Fluxo de Caixa (Temporal)
   const dadosGraficoFluxo = useMemo(() => {
@@ -532,46 +591,6 @@ export default function FinanceiroPage() {
     };
   }, [dadosFiltrados]);
 
-  // 3. Contas a Vencer (Próximas contas a pagar ordenadas por urgência)
-  const contasProximasVencimento = useMemo(() => {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    return [...contasPagar]
-      .filter(cp => cp.status !== 'paga' && cp.status !== 'liquidada')
-      .map(cp => {
-        const dtVenc = parseData(cp.dataVencimento);
-        let diasRestantes = null;
-        let urgencia = 'a_vencer'; // 'vencida', 'hoje', 'urgente', 'a_vencer'
-
-        if (dtVenc) {
-          const diffMs = dtVenc.getTime() - hoje.getTime();
-          diasRestantes = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-
-          if (diasRestantes < 0) {
-            urgencia = 'vencida';
-          } else if (diasRestantes === 0) {
-            urgencia = 'hoje';
-          } else if (diasRestantes <= 3) {
-            urgencia = 'urgente';
-          } else {
-            urgencia = 'a_vencer';
-          }
-        }
-
-        return {
-          ...cp,
-          dataVencimentoObj: dtVenc,
-          diasRestantes,
-          urgencia
-        };
-      })
-      .sort((a, b) => {
-        if (!a.dataVencimentoObj) return 1;
-        if (!b.dataVencimentoObj) return -1;
-        return a.dataVencimentoObj.getTime() - b.dataVencimentoObj.getTime();
-      });
-  }, [contasPagar]);
 
   // 4. Lista consolidada de Contas a Receber
   const listaContasReceber = useMemo(() => {
@@ -586,7 +605,7 @@ export default function FinanceiroPage() {
         if (dtVenc && dtVenc < hoje) {
           statusCalculado = 'vencida';
         } else {
-          statusCalculado = 'a_vencer';
+          statusCalculado = 'pendente';
         }
       }
 
@@ -602,34 +621,6 @@ export default function FinanceiroPage() {
     });
   }, [dadosFiltrados.contasReceber]);
 
-  // 5. Lista consolidada de Contas a Pagar
-  const listaContasPagar = useMemo(() => {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    return [...dadosFiltrados.contasPagar].map(cp => {
-      const dtVenc = parseData(cp.dataVencimento);
-      let statusCalculado = cp.status || 'pendente';
-
-      if (statusCalculado !== 'paga' && statusCalculado !== 'liquidada') {
-        if (dtVenc && dtVenc < hoje) {
-          statusCalculado = 'vencida';
-        } else {
-          statusCalculado = 'a_vencer';
-        }
-      }
-
-      return {
-        ...cp,
-        statusCalculado,
-        dataVencimentoObj: dtVenc
-      };
-    }).sort((a, b) => {
-      if (!a.dataVencimentoObj) return 1;
-      if (!b.dataVencimentoObj) return -1;
-      return a.dataVencimentoObj.getTime() - b.dataVencimentoObj.getTime();
-    });
-  }, [dadosFiltrados.contasPagar]);
 
   // 6. Últimas Receitas e Despesas (Movimentações)
   const ultimasReceitas = useMemo(() => {
@@ -1049,37 +1040,44 @@ export default function FinanceiroPage() {
                   R$ {formatCurrency(estatisticas.totalAReceber)}
                 </div>
                 <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
-                  <span className="text-rose-600 dark:text-rose-400 font-medium">
-                    {estatisticas.qtdReceberVencidas} vencida(s)
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
+                    {estatisticas.qtdParcelasPendentes} parcela(s) pendente(s)
                   </span>
-                  <span className="text-slate-400 dark:text-slate-400">
-                    {estatisticas.qtdReceberAVencer} a vencer
-                  </span>
+                  {estatisticas.qtdReceberVencidas > 0 && (
+                    <span className="text-rose-600 dark:text-rose-400 font-semibold">
+                      {estatisticas.qtdReceberVencidas} em atraso
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* CARD 2: Total a Pagar */}
+              {/* CARD 2: Valor em Estoque (Patrimônio Físico em Casa/Depósito) */}
               <div
-                onClick={() => setModalAberto('totalAPagar')}
-                className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500/50 hover:shadow-md transition-all cursor-pointer group"
+                onClick={() => setModalAberto('patrimonioEstoque')}
+                className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-cyan-400 dark:hover:border-cyan-500/50 hover:shadow-md transition-all cursor-pointer group"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Total a Pagar
-                  </span>
-                  <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center text-rose-600 dark:text-rose-400 group-hover:scale-105 transition-transform">
-                    <Receipt size={20} />
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Valor em Estoque
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-cyan-100 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300">
+                      Custo
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 flex items-center justify-center text-cyan-600 dark:text-cyan-400 group-hover:scale-105 transition-transform">
+                    <Boxes size={20} />
                   </div>
                 </div>
                 <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  R$ {formatCurrency(estatisticas.totalAPagar)}
+                  R$ {formatCurrency(metricasEstoque.valorCustoTotal)}
                 </div>
                 <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
-                  <span className="text-rose-600 dark:text-rose-400 font-medium">
-                    {estatisticas.qtdPagarVencidas} vencida(s)
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold truncate pr-1">
+                    Venda: R$ {formatCurrency(metricasEstoque.valorVendaTotal)}
                   </span>
-                  <span className="text-slate-400 dark:text-slate-400">
-                    {estatisticas.qtdPagarAVencer} a vencer
+                  <span className="text-slate-400 dark:text-slate-400 whitespace-nowrap">
+                    {metricasEstoque.totalUnidades} un • {metricasEstoque.produtosComEstoque} itens
                   </span>
                 </div>
               </div>
@@ -1365,404 +1363,422 @@ export default function FinanceiroPage() {
             </div>
 
             {/* ========================================================================= */}
-            {/* 5. PAINEL LATERAL & CONTAS A VENCER */}
+            {/* 5. RESUMO DO FLUXO FINANCEIRO */}
             {/* ========================================================================= */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Contas a Vencer (2 colunas) */}
-              <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-700/60">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl">
-                      <AlertCircle size={20} />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                        Contas a Vencer
-                      </h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Próximos compromissos e contas que exigem atenção
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setModalAberto('todasVencer')}
-                    className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 flex items-center gap-1 group"
-                  >
-                    Ver todas <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {contasProximasVencimento.slice(0, 5).map((conta) => {
-                    let badgeClass = 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300';
-                    let textoUrgencia = conta.dataVencimentoObj
-                      ? formatarData(conta.dataVencimentoObj)
-                      : 'Sem data';
-
-                    if (conta.urgencia === 'vencida') {
-                      badgeClass = 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 font-semibold';
-                      textoUrgencia = `Vencida (${Math.abs(conta.diasRestantes)}d atrás)`;
-                    } else if (conta.urgencia === 'hoje') {
-                      badgeClass = 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 font-semibold';
-                      textoUrgencia = 'Vence hoje!';
-                    } else if (conta.urgencia === 'urgente') {
-                      badgeClass = 'bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300';
-                      textoUrgencia = `Vence em ${conta.diasRestantes} dias`;
-                    } else if (conta.diasRestantes !== null) {
-                      textoUrgencia = `Em ${conta.diasRestantes} dias (${formatarData(conta.dataVencimentoObj)})`;
-                    }
-
-                    return (
-                      <div
-                        key={conta.id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all gap-3"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="p-2.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
-                            <Building2 size={18} />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-sm text-slate-900 dark:text-slate-100">
-                              {conta.fornecedor || 'Fornecedor não especificado'}
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {conta.descricao || conta.categoria || 'Despesa'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                          <div className="text-left sm:text-right">
-                            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                              R$ {formatCurrency(conta.valor)}
-                            </p>
-                            <span className={`inline-block text-[11px] px-2 py-0.5 rounded-full ${badgeClass}`}>
-                              {textoUrgencia}
-                            </span>
-                          </div>
-
-                          <button
-                            onClick={() => abrirBaixa(conta, 'pagar')}
-                            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white rounded-lg text-xs font-semibold transition-all shadow-sm"
-                          >
-                            Pagar
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {contasProximasVencimento.length === 0 && (
-                    <div className="text-center py-8 text-slate-400">
-                      <CheckCircle2 size={36} className="mx-auto text-emerald-500 mb-2 opacity-80" />
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Nenhuma conta pendente a vencer!
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        Seus pagamentos estão em dia.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Resumo Financeiro Lateral (1 coluna) */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-5 border-b border-slate-100 dark:border-slate-700/60 gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-1">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <Wallet size={20} className="text-cyan-500" />
                     Resumo Financeiro
                   </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Visão consolidada do fluxo atual
                   </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    Situação do Fluxo de Caixa:
+                  </span>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                    estatisticas.saldo >= 0
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                      : 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
+                  }`}>
+                    {estatisticas.saldo >= 0 ? 'POSITIVO' : 'NEGATIVO'}
+                  </span>
+                </div>
+              </div>
 
-                  <div className="space-y-4">
-                    {/* Entradas */}
-                    <div className="p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
-                        Total de Entradas
-                      </span>
-                      <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                        R$ {formatCurrency(estatisticas.totalReceitas)}
-                      </span>
-                    </div>
-
-                    {/* Saídas */}
-                    <div className="p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
-                        Total de Saídas
-                      </span>
-                      <span className="text-xl font-bold text-rose-600 dark:text-rose-400">
-                        R$ {formatCurrency(estatisticas.totalDespesas)}
-                      </span>
-                    </div>
-
-                    {/* Saldo */}
-                    <div className="p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
-                        Saldo do Período
-                      </span>
-                      <span className={`text-xl font-bold ${
-                        estatisticas.saldo >= 0 ? 'text-cyan-600 dark:text-cyan-400' : 'brand-text'
-                      }`}>
-                        R$ {formatCurrency(Math.abs(estatisticas.saldo))}
-                      </span>
-                    </div>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {/* Entradas */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
+                    Total de Entradas
+                  </span>
+                  <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                    R$ {formatCurrency(estatisticas.totalReceitas)}
+                  </span>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700/60">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                      Situação do Fluxo de Caixa:
-                    </span>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                      estatisticas.saldo >= 0
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
-                        : 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
-                    }`}>
-                      {estatisticas.saldo >= 0 ? 'POSITIVO' : 'NEGATIVO'}
-                    </span>
-                  </div>
+                {/* Saídas */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
+                    Total de Saídas
+                  </span>
+                  <span className="text-xl font-bold text-rose-600 dark:text-rose-400">
+                    R$ {formatCurrency(estatisticas.totalDespesas)}
+                  </span>
+                </div>
 
-                  {/* Barra de Proporção Entradas vs Saídas */}
-                  <div className="mt-3">
-                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden flex">
-                      <div
-                        className="bg-emerald-500 h-full transition-all duration-500"
-                        style={{
-                          width: `${
-                            estatisticas.totalReceitas + estatisticas.totalDespesas > 0
-                              ? (estatisticas.totalReceitas / (estatisticas.totalReceitas + estatisticas.totalDespesas)) * 100
-                              : 50
-                          }%`
-                        }}
-                      />
-                      <div
-                        className="bg-rose-500 h-full transition-all duration-500"
-                        style={{
-                          width: `${
-                            estatisticas.totalReceitas + estatisticas.totalDespesas > 0
-                              ? (estatisticas.totalDespesas / (estatisticas.totalReceitas + estatisticas.totalDespesas)) * 100
-                              : 50
-                          }%`
-                        }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-[11px] text-slate-400 dark:text-slate-400 mt-1">
-                      <span>Receitas</span>
-                      <span>Despesas</span>
-                    </div>
-                  </div>
+                {/* Saldo */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
+                    Saldo do Período
+                  </span>
+                  <span className={`text-xl font-bold ${
+                    estatisticas.saldo >= 0 ? 'text-cyan-600 dark:text-cyan-400' : 'brand-text'
+                  }`}>
+                    R$ {formatCurrency(Math.abs(estatisticas.saldo))}
+                  </span>
+                </div>
+              </div>
+
+              {/* Barra de Proporção Entradas vs Saídas */}
+              <div className="pt-2">
+                <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden flex">
+                  <div
+                    className="bg-emerald-500 h-full transition-all duration-500"
+                    style={{
+                      width: `${
+                        estatisticas.totalReceitas + estatisticas.totalDespesas > 0
+                          ? (estatisticas.totalReceitas / (estatisticas.totalReceitas + estatisticas.totalDespesas)) * 100
+                          : 50
+                      }%`
+                    }}
+                  />
+                  <div
+                    className="bg-rose-500 h-full transition-all duration-500"
+                    style={{
+                      width: `${
+                        estatisticas.totalReceitas + estatisticas.totalDespesas > 0
+                          ? (estatisticas.totalDespesas / (estatisticas.totalReceitas + estatisticas.totalDespesas)) * 100
+                          : 50
+                      }%`
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between text-[11px] text-slate-400 dark:text-slate-400 mt-1">
+                  <span>Receitas ({estatisticas.totalReceitas + estatisticas.totalDespesas > 0 ? Math.round((estatisticas.totalReceitas / (estatisticas.totalReceitas + estatisticas.totalDespesas)) * 100) : 50}%)</span>
+                  <span>Despesas ({estatisticas.totalReceitas + estatisticas.totalDespesas > 0 ? Math.round((estatisticas.totalDespesas / (estatisticas.totalReceitas + estatisticas.totalDespesas)) * 100) : 50}%)</span>
                 </div>
               </div>
             </div>
 
             {/* ========================================================================= */}
-            {/* 6. TABELAS: CONTAS A RECEBER & CONTAS A PAGAR */}
+            {/* 6. TABELA: CONTAS A RECEBER */}
             {/* ========================================================================= */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Tabela 1: Contas a Receber */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-700/60">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                      <ArrowUpRight size={18} />
-                    </div>
-                    <div>
-                      <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                        Contas a Receber
-                      </h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Clientes e recebimentos do período
-                      </p>
-                    </div>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-700/60">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                    <ArrowUpRight size={18} />
                   </div>
-
-                  <button
-                    onClick={() => setModalAberto('todasReceber')}
-                    className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 flex items-center gap-1 group"
-                  >
-                    Ver todas <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                  </button>
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                      Contas a Receber
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Clientes e recebimentos do período
+                    </p>
+                  </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-100 dark:border-slate-700/60 text-slate-400 dark:text-slate-400 uppercase tracking-wider font-semibold">
-                        <th className="py-2.5 px-2">Cliente</th>
-                        <th className="py-2.5 px-2">Descrição</th>
-                        <th className="py-2.5 px-2 text-right">Valor</th>
-                        <th className="py-2.5 px-2 text-center">Vencimento</th>
-                        <th className="py-2.5 px-2 text-center">Status</th>
-                        <th className="py-2.5 px-2 text-center">Ação</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/40">
-                      {listaContasReceber.slice(0, 6).map((c) => {
-                        let statusBadge = 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300';
-                        let labelStatus = 'Em aberto';
+                <button
+                  onClick={() => setModalAberto('todasReceber')}
+                  className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 flex items-center gap-1 group"
+                >
+                  Ver todas <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
 
-                        if (c.statusCalculado === 'pago' || c.status === 'pago') {
-                          statusBadge = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300';
-                          labelStatus = 'Paga';
-                        } else if (c.statusCalculado === 'vencida') {
-                          statusBadge = 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300';
-                          labelStatus = 'Vencida';
-                        } else {
-                          labelStatus = 'A vencer';
-                        }
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-slate-700/60 text-slate-400 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                      <th className="py-2.5 px-2">Cliente</th>
+                      <th className="py-2.5 px-2">Descrição</th>
+                      <th className="py-2.5 px-2 text-right">Valor</th>
+                      <th className="py-2.5 px-2 text-center">Vencimento</th>
+                      <th className="py-2.5 px-2 text-center">Status</th>
+                      <th className="py-2.5 px-2 text-center">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700/40">
+                    {listaContasReceber.slice(0, 6).map((c) => {
+                      let statusBadge = 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300';
+                      let labelStatus = 'Em aberto';
 
-                        return (
-                          <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                            <td className="py-3 px-2 font-medium text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
-                              {c.clienteNome || 'Cliente'}
-                            </td>
-                            <td className="py-3 px-2 text-slate-500 dark:text-slate-400 max-w-[120px] truncate">
-                              {c.descricao || 'Recebimento'}
-                            </td>
-                            <td className="py-3 px-2 text-right font-bold text-slate-800 dark:text-slate-100">
-                              R$ {formatCurrency(c.valor)}
-                            </td>
-                            <td className="py-3 px-2 text-center text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                              {c.dataVencimentoObj ? formatarData(c.dataVencimentoObj) : '-'}
-                            </td>
-                            <td className="py-3 px-2 text-center">
-                              <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusBadge}`}>
-                                {labelStatus}
+                      if (c.statusCalculado === 'pago' || c.status === 'pago') {
+                        statusBadge = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300';
+                        labelStatus = 'Paga';
+                      } else if (c.statusCalculado === 'vencida') {
+                        statusBadge = 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300';
+                        labelStatus = 'Vencida';
+                      } else {
+                        labelStatus = 'Pendente';
+                      }
+
+                      return (
+                        <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                          <td className="py-3 px-2 font-medium text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
+                            {c.clienteNome || 'Cliente'}
+                          </td>
+                          <td className="py-3 px-2 text-slate-500 dark:text-slate-400 max-w-[120px] truncate">
+                            {c.descricao || 'Recebimento'}
+                          </td>
+                          <td className="py-3 px-2 text-right font-bold text-slate-800 dark:text-slate-100">
+                            R$ {formatCurrency(c.valor)}
+                          </td>
+                          <td className="py-3 px-2 text-center text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            {c.dataVencimentoObj ? formatarData(c.dataVencimentoObj) : '-'}
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusBadge}`}>
+                              {labelStatus}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            {c.statusCalculado !== 'pago' && c.status !== 'pago' ? (
+                              <button
+                                onClick={() => abrirBaixa(c, 'receber')}
+                                className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-medium transition-all"
+                              >
+                                Receber
+                              </button>
+                            ) : (
+                              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
+                                <Check size={12} /> Liquidada
                               </span>
-                            </td>
-                            <td className="py-3 px-2 text-center">
-                              {c.statusCalculado !== 'pago' && c.status !== 'pago' ? (
-                                <button
-                                  onClick={() => abrirBaixa(c, 'receber')}
-                                  className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-medium transition-all"
-                                >
-                                  Receber
-                                </button>
-                              ) : (
-                                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
-                                  <Check size={12} /> Liquidada
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                      {listaContasReceber.length === 0 && (
-                        <tr>
-                          <td colSpan={6} className="py-6 text-center text-slate-400 text-xs">
-                            Nenhuma conta a receber encontrada no período.
+                            )}
                           </td>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      );
+                    })}
+                    {listaContasReceber.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="py-6 text-center text-slate-400 text-xs">
+                          Nenhuma conta a receber encontrada no período.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* ========================================================================= */}
+            {/* 6.1 PATRIMÔNIO & ESTOQUE FÍSICO (ITENS EM CASA / ESTOQUE) */}
+            {/* ========================================================================= */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-700/60">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 rounded-xl">
+                    <Boxes size={22} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                        Patrimônio & Estoque Físico
+                      </h2>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300">
+                        Itens em Casa / Depósito
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Controle do capital investido em mercadorias disponíveis no estoque físico
+                    </p>
+                  </div>
+                </div>
+
+                {/* 4 Mini KPIs da Seção de Estoque */}
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Valor em Custo</span>
+                    <strong className="text-slate-900 dark:text-slate-100 text-sm">
+                      R$ {formatCurrency(metricasEstoque.valorCustoTotal)}
+                    </strong>
+                  </div>
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Valor em Venda</span>
+                    <strong className="text-emerald-600 dark:text-emerald-400 text-sm">
+                      R$ {formatCurrency(metricasEstoque.valorVendaTotal)}
+                    </strong>
+                  </div>
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Lucro Projetado</span>
+                    <strong className="text-cyan-600 dark:text-cyan-400 text-sm">
+                      R$ {formatCurrency(metricasEstoque.lucroPotencial)}{' '}
+                      <span className="text-[10px] font-normal text-slate-400">({metricasEstoque.margemPotencial}%)</span>
+                    </strong>
+                  </div>
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Unidades Físicas</span>
+                    <strong className="text-slate-800 dark:text-slate-200 text-sm">
+                      {metricasEstoque.totalUnidades} un
+                    </strong>
+                  </div>
                 </div>
               </div>
 
-              {/* Tabela 2: Contas a Pagar */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-700/60">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl">
-                      <ArrowDownRight size={18} />
-                    </div>
-                    <div>
-                      <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                        Contas a Pagar
-                      </h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Fornecedores e obrigações do período
-                      </p>
-                    </div>
+              {/* Barra de Filtros e Busca da Tabela de Estoque */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Buscar produto por nome, marca, código..."
+                    value={buscaEstoque}
+                    onChange={(e) => setBuscaEstoque(e.target.value)}
+                    className="w-full pl-9 pr-8 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  />
+                  {buscaEstoque && (
+                    <button onClick={() => setBuscaEstoque('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
+                    <button
+                      onClick={() => setFiltroEstoqueFinanceiro('com_estoque')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        filtroEstoqueFinanceiro === 'com_estoque'
+                          ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                    >
+                      Em Estoque ({metricasEstoque.produtosComEstoque})
+                    </button>
+                    <button
+                      onClick={() => setFiltroEstoqueFinanceiro('todos')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        filtroEstoqueFinanceiro === 'todos'
+                          ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                    >
+                      Todos ({metricasEstoque.totalCadastrados})
+                    </button>
+                    <button
+                      onClick={() => setFiltroEstoqueFinanceiro('zerados')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        filtroEstoqueFinanceiro === 'zerados'
+                          ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                    >
+                      Zerados ({metricasEstoque.produtosZerados})
+                    </button>
                   </div>
 
-                  <button
-                    onClick={() => setModalAberto('todasPagar')}
-                    className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 flex items-center gap-1 group"
+                  <a
+                    href="/estoque"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-all"
                   >
-                    Ver todas <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-100 dark:border-slate-700/60 text-slate-400 dark:text-slate-400 uppercase tracking-wider font-semibold">
-                        <th className="py-2.5 px-2">Fornecedor</th>
-                        <th className="py-2.5 px-2">Descrição</th>
-                        <th className="py-2.5 px-2 text-right">Valor</th>
-                        <th className="py-2.5 px-2 text-center">Vencimento</th>
-                        <th className="py-2.5 px-2 text-center">Status</th>
-                        <th className="py-2.5 px-2 text-center">Ação</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/40">
-                      {listaContasPagar.slice(0, 6).map((cp) => {
-                        let statusBadge = 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300';
-                        let labelStatus = 'Em aberto';
-
-                        if (cp.statusCalculado === 'paga' || cp.status === 'paga') {
-                          statusBadge = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300';
-                          labelStatus = 'Paga';
-                        } else if (cp.statusCalculado === 'vencida') {
-                          statusBadge = 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300';
-                          labelStatus = 'Vencida';
-                        } else {
-                          labelStatus = 'A vencer';
-                        }
-
-                        return (
-                          <tr key={cp.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                            <td className="py-3 px-2 font-medium text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
-                              {cp.fornecedor || 'Fornecedor'}
-                            </td>
-                            <td className="py-3 px-2 text-slate-500 dark:text-slate-400 max-w-[120px] truncate">
-                              {cp.descricao || cp.categoria || 'Despesa'}
-                            </td>
-                            <td className="py-3 px-2 text-right font-bold text-slate-800 dark:text-slate-100">
-                              R$ {formatCurrency(cp.valor)}
-                            </td>
-                            <td className="py-3 px-2 text-center text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                              {cp.dataVencimentoObj ? formatarData(cp.dataVencimentoObj) : '-'}
-                            </td>
-                            <td className="py-3 px-2 text-center">
-                              <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusBadge}`}>
-                                {labelStatus}
-                              </span>
-                            </td>
-                            <td className="py-3 px-2 text-center">
-                              {cp.statusCalculado !== 'paga' && cp.status !== 'paga' ? (
-                                <button
-                                  onClick={() => abrirBaixa(cp, 'pagar')}
-                                  className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-[11px] font-medium transition-all"
-                                >
-                                  Pagar
-                                </button>
-                              ) : (
-                                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
-                                  <Check size={12} /> Paga
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                      {listaContasPagar.length === 0 && (
-                        <tr>
-                          <td colSpan={6} className="py-6 text-center text-slate-400 text-xs">
-                            Nenhuma conta a pagar encontrada no período.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                    <span>Ir para Estoque</span>
+                    <ArrowRight size={13} />
+                  </a>
                 </div>
               </div>
+
+              {/* Tabela dos Produtos em Estoque */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-slate-700/60 text-slate-400 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                      <th className="py-2.5 px-3">Produto</th>
+                      <th className="py-2.5 px-3">Categoria</th>
+                      <th className="py-2.5 px-3 text-center">Qtd em Estoque</th>
+                      <th className="py-2.5 px-3 text-right">Custo Unitário</th>
+                      <th className="py-2.5 px-3 text-right">Total Custo (Investido)</th>
+                      <th className="py-2.5 px-3 text-right">Preço Venda Unit.</th>
+                      <th className="py-2.5 px-3 text-right">Total Venda Projetado</th>
+                      <th className="py-2.5 px-3 text-center">Margem</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700/40">
+                    {produtosEstoqueFiltrados.slice(0, 15).map((p) => {
+                      const qtd = parseFloat(p.quantidade) || 0;
+                      const cUnit = parseFloat(p.precoCompra ?? p.valorCompra ?? p.valorCusto) || 0;
+                      const vUnit = parseFloat(p.precoVenda ?? p.valorVenda) || 0;
+                      const totalCusto = qtd * cUnit;
+                      const totalVenda = qtd * vUnit;
+                      const margemUnit = vUnit > 0 && cUnit > 0
+                        ? (((vUnit - cUnit) / vUnit) * 100).toFixed(0)
+                        : 0;
+
+                      return (
+                        <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-2.5">
+                              {p.imagemBase64 ? (
+                                <img src={p.imagemBase64} alt={p.nome} className="w-8 h-8 rounded-lg object-cover flex-shrink-0 border border-slate-200 dark:border-slate-700" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 flex-shrink-0">
+                                  <Package size={16} />
+                                </div>
+                              )}
+                              <div className="max-w-[200px] truncate">
+                                <span className="font-bold text-slate-900 dark:text-slate-100 block truncate">
+                                  {p.nome}
+                                </span>
+                                {(p.marca || p.modelo || p.codigo) && (
+                                  <span className="text-[11px] text-slate-400 truncate block">
+                                    {[p.marca, p.modelo, p.codigo ? `#${p.codigo}` : ''].filter(Boolean).join(' • ')}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px]">
+                              {p.categoria || 'Geral'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-center whitespace-nowrap">
+                            <span className={`inline-block px-2.5 py-1 rounded-full font-bold text-xs ${
+                              qtd > 0
+                                ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300'
+                                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                            }`}>
+                              {qtd} {p.unidade || 'un'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-right font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                            R$ {formatCurrency(cUnit)}
+                          </td>
+                          <td className="py-3 px-3 text-right font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                            R$ {formatCurrency(totalCusto)}
+                          </td>
+                          <td className="py-3 px-3 text-right font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                            R$ {formatCurrency(vUnit)}
+                          </td>
+                          <td className="py-3 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                            R$ {formatCurrency(totalVenda)}
+                          </td>
+                          <td className="py-3 px-3 text-center whitespace-nowrap">
+                            {margemUnit > 0 ? (
+                              <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                {margemUnit}%
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-slate-400">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {produtosEstoqueFiltrados.length === 0 && (
+                      <tr>
+                        <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
+                          Nenhum produto encontrado com os filtros selecionados.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {produtosEstoqueFiltrados.length > 15 && (
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-400">
+                  <span>Exibindo os 15 produtos com maior valor em estoque (de {produtosEstoqueFiltrados.length} no total)</span>
+                  <a href="/estoque" className="font-semibold text-cyan-600 dark:text-cyan-400 hover:underline">
+                    Ver todos no módulo de Estoque →
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* ========================================================================= */}
@@ -2412,6 +2428,89 @@ export default function FinanceiroPage() {
           </div>
         )}
 
+        {/* Modal de Detalhamento do Patrimônio em Estoque */}
+        {modalAberto === 'patrimonioEstoque' && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setModalAberto(null)}>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto border border-slate-200 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-5 flex items-center justify-between z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                    <Boxes size={22} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Patrimônio em Estoque Físico</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Produtos disponíveis em casa / depósito com valor de custo e venda
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setModalAberto(null)} className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span className="text-xs text-slate-400 block font-semibold uppercase">Total em Custo (Investido)</span>
+                    <span className="text-xl font-bold text-slate-900 dark:text-white mt-1 block">
+                      R$ {formatCurrency(metricasEstoque.valorCustoTotal)}
+                    </span>
+                  </div>
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                    <span className="text-xs text-emerald-700 dark:text-emerald-300 block font-semibold uppercase">Total em Venda</span>
+                    <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">
+                      R$ {formatCurrency(metricasEstoque.valorVendaTotal)}
+                    </span>
+                  </div>
+                  <div className="p-4 bg-cyan-50 dark:bg-cyan-950/40 rounded-xl border border-cyan-200 dark:border-cyan-800">
+                    <span className="text-xs text-cyan-700 dark:text-cyan-300 block font-semibold uppercase">Lucro Projetado</span>
+                    <span className="text-xl font-bold text-cyan-600 dark:text-cyan-400 mt-1 block">
+                      R$ {formatCurrency(metricasEstoque.lucroPotencial)}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">
+                    Itens em Estoque ({metricasEstoque.produtosComEstoque} produtos • {metricasEstoque.totalUnidades} unidades)
+                  </h4>
+                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                    {produtos.filter(p => (parseFloat(p.quantidade) || 0) > 0).map(p => {
+                      const qtd = parseFloat(p.quantidade) || 0;
+                      const cUnit = parseFloat(p.precoCompra ?? p.valorCompra ?? p.valorCusto) || 0;
+                      const vUnit = parseFloat(p.precoVenda ?? p.valorVenda) || 0;
+                      return (
+                        <div key={p.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
+                          <div>
+                            <p className="font-semibold text-xs text-slate-900 dark:text-slate-100">{p.nome}</p>
+                            <p className="text-[11px] text-slate-400">
+                              {qtd} {p.unidade || 'un'} • Custo un: R$ {formatCurrency(cUnit)} • Venda un: R$ {formatCurrency(vUnit)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                              Custo: R$ {formatCurrency(qtd * cUnit)}
+                            </p>
+                            <p className="font-semibold text-[11px] text-emerald-600 dark:text-emerald-400">
+                              Venda: R$ {formatCurrency(qtd * vUnit)}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {metricasEstoque.produtosComEstoque === 0 && (
+                      <p className="text-xs text-slate-400 text-center py-6">
+                        Nenhum produto com quantidade em estoque físico no momento.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {modalAberto === 'totalAPagar' && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setModalAberto(null)}>
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto border border-slate-200 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
@@ -2586,15 +2685,13 @@ export default function FinanceiroPage() {
           </div>
         )}
 
-        {/* 5. Modais Ver Todas (Vencer, Receber, Pagar) */}
-        {(modalAberto === 'todasVencer' || modalAberto === 'todasReceber' || modalAberto === 'todasPagar') && (
+        {/* 5. Modal Ver Todas (Receber) */}
+        {modalAberto === 'todasReceber' && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setModalAberto(null)}>
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-4xl w-full max-h-[85vh] overflow-y-auto border border-slate-200 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
               <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-5 flex items-center justify-between z-10">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                  {modalAberto === 'todasVencer' && 'Todas as Contas a Vencer'}
-                  {modalAberto === 'todasReceber' && 'Todas as Contas a Receber'}
-                  {modalAberto === 'todasPagar' && 'Todas as Contas a Pagar'}
+                  Todas as Contas a Receber
                 </h3>
                 <button onClick={() => setModalAberto(null)} className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
                   <X size={20} />
@@ -2614,10 +2711,10 @@ export default function FinanceiroPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
-                      {(modalAberto === 'todasVencer' ? contasProximasVencimento : modalAberto === 'todasReceber' ? listaContasReceber : listaContasPagar).map((item) => (
+                      {listaContasReceber.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
                           <td className="py-3 px-3 font-semibold text-slate-900 dark:text-slate-100">
-                            {item.fornecedor || item.clienteNome || 'Entidade'}
+                            {item.clienteNome || 'Cliente'}
                           </td>
                           <td className="py-3 px-3 text-slate-500 dark:text-slate-400">
                             {item.descricao || item.categoria || '-'}
@@ -2629,27 +2726,15 @@ export default function FinanceiroPage() {
                             {item.dataVencimento ? formatarData(item.dataVencimento) : '-'}
                           </td>
                           <td className="py-3 px-3 text-center">
-                            {modalAberto === 'todasReceber' ? (
-                              <button
-                                onClick={() => {
-                                  setModalAberto(null);
-                                  abrirBaixa(item, 'receber');
-                                }}
-                                className="px-2.5 py-1 bg-emerald-600 text-white rounded text-xs font-semibold"
-                              >
-                                Receber
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => {
-                                  setModalAberto(null);
-                                  abrirBaixa(item, 'pagar');
-                                }}
-                                className="px-2.5 py-1 bg-rose-600 text-white rounded text-xs font-semibold"
-                              >
-                                Pagar
-                              </button>
-                            )}
+                            <button
+                              onClick={() => {
+                                setModalAberto(null);
+                                abrirBaixa(item, 'receber');
+                              }}
+                              className="px-2.5 py-1 bg-emerald-600 text-white rounded text-xs font-semibold"
+                            >
+                              Receber
+                            </button>
                           </td>
                         </tr>
                       ))}

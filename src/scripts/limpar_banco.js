@@ -2,14 +2,32 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, deleteDoc, doc, writeBatch } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
 
-// Credenciais lidas de variáveis de ambiente (configure no seu .env ou ambiente de execução)
+import fs from "fs";
+
+// Leitura de variáveis do .env caso não estejam no process.env
+const env = {};
+try {
+  const envContent = fs.readFileSync(".env", "utf-8");
+  envContent.split("\n").forEach(line => {
+    const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+    if (match) {
+      let value = match[2] || "";
+      value = value.trim().replace(/^['"](.*)['"]$/, "$1");
+      env[match[1]] = value;
+    }
+  });
+} catch {
+  // Ignora se não existir .env
+}
+
+// Credenciais lidas de variáveis de ambiente ou .env
 const firebaseConfig = {
-  apiKey:            process.env.FIREBASE_API_KEY            || "CONFIGURE_NO_ENV",
-  authDomain:        process.env.FIREBASE_AUTH_DOMAIN        || "CONFIGURE_NO_ENV",
-  projectId:         process.env.FIREBASE_PROJECT_ID         || "CONFIGURE_NO_ENV",
-  storageBucket:     process.env.FIREBASE_STORAGE_BUCKET     || "CONFIGURE_NO_ENV",
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "CONFIGURE_NO_ENV",
-  appId:             process.env.FIREBASE_APP_ID             || "CONFIGURE_NO_ENV",
+  apiKey:            process.env.FIREBASE_API_KEY            || env.VITE_FIREBASE_API_KEY            || "CONFIGURE_NO_ENV",
+  authDomain:        process.env.FIREBASE_AUTH_DOMAIN        || env.VITE_FIREBASE_AUTH_DOMAIN        || "CONFIGURE_NO_ENV",
+  projectId:         process.env.FIREBASE_PROJECT_ID         || env.VITE_FIREBASE_PROJECT_ID         || "CONFIGURE_NO_ENV",
+  storageBucket:     process.env.FIREBASE_STORAGE_BUCKET     || env.VITE_FIREBASE_STORAGE_BUCKET     || "CONFIGURE_NO_ENV",
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || env.VITE_FIREBASE_MESSAGING_SENDER_ID || "CONFIGURE_NO_ENV",
+  appId:             process.env.FIREBASE_APP_ID             || env.VITE_FIREBASE_APP_ID             || "CONFIGURE_NO_ENV",
 };
 
 const appDb  = initializeApp(firebaseConfig, "db_temp");

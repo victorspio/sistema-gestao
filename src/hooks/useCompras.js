@@ -116,20 +116,34 @@ export function useCompras() {
         });
 
         for (const item of dados.itens) {
-          const produtoExistente = produtosMap.get(item.nomeProduto);
+          const docPorId = item.produtoId ? todosProdutosSnap.docs.find(d => d.id === item.produtoId) : null;
+          const produtoExistente = docPorId
+            ? { id: docPorId.id, ...docPorId.data() }
+            : produtosMap.get(item.nomeProduto);
+
           if (produtoExistente) {
             const quantidadeComprada = parseFloat(item.quantidade) || 0;
-            batch.update(colDoc('produtos', produtoExistente.id), {
+            const updateData = {
               quantidade: increment(quantidadeComprada),
               atualizadoEm: new Date()
-            });
+            };
+            if (item.valorCompra !== undefined && parseFloat(item.valorCompra) >= 0) {
+              updateData.precoCompra = parseFloat(item.valorCompra);
+            }
+            if (item.valorVenda !== undefined && parseFloat(item.valorVenda) >= 0) {
+              updateData.precoVenda = parseFloat(item.valorVenda);
+            }
+            if (dados.fornecedor && dados.fornecedor.trim()) {
+              updateData.fornecedor = dados.fornecedor.trim();
+            }
+            batch.update(colDoc('produtos', produtoExistente.id), updateData);
             const movimentacaoRef = doc(col('movimentacoesEstoque'));
             batch.set(movimentacaoRef, {
               produtoId: produtoExistente.id, produtoNome: item.nomeProduto,
               tipo: 'entrada', quantidade: quantidadeComprada,
               valorCompra: parseFloat(item.valorCompra) || 0,
               valorVenda: parseFloat(item.valorVenda) || 0,
-              fornecedor: dados.fornecedor || '', motivo: 'Compra',
+              fornecedor: dados.fornecedor || '', motivo: 'Compra / Entrada de Estoque',
               compraId: compraRef.id, codigoCompra, data: new Date()
             });
           } else {
